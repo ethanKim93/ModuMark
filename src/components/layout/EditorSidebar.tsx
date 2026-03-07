@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, FolderOpen, Layers, Scissors, ScanText } from "lucide-react";
+import { FileText, FolderOpen, Layers, PenSquare, Scissors, ScanText } from "lucide-react";
 import { StorageIndicator } from "./StorageIndicator";
 import { AdSlot } from "@/components/ads/AdSlot";
 import { useTabStore } from "@/stores/tabStore";
@@ -30,6 +30,7 @@ export function EditorSidebar() {
   };
 
   const openFiles = tabs.filter((t) => t.fileHandle);
+  const editorActive = pathname.startsWith("/editor");
 
   return (
     <aside className="flex flex-col bg-surface border-r border-border w-14 lg:w-60 transition-all">
@@ -47,6 +48,19 @@ export function EditorSidebar() {
           <p className="hidden lg:block text-[10px] font-bold uppercase tracking-[0.1em] text-[#64748B] px-2 mb-2">
             Local Workspace
           </p>
+          {/* 에디터 링크 */}
+          <Link
+            href="/editor"
+            title="에디터"
+            className={`flex items-center justify-center lg:justify-start gap-2 w-full px-2 py-2 rounded-md text-[14px] transition-colors min-h-[44px] ${
+              editorActive
+                ? "bg-primary/20 text-primary"
+                : "text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+            }`}
+          >
+            <PenSquare className="h-4 w-4 shrink-0" />
+            <span className="hidden lg:block">에디터</span>
+          </Link>
           {/* 파일 열기 버튼 */}
           <button
             onClick={handleOpenFile}

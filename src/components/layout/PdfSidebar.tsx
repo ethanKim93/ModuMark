@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Layers, Scissors, ScanText } from "lucide-react";
+import { Home, Layers, Scissors, ScanText, PenSquare } from "lucide-react";
 import { StorageIndicator } from "./StorageIndicator";
 import { AdSlot } from "@/components/ads/AdSlot";
 
 const navItems = [
   { label: "Home", href: "/", icon: Home },
+  { label: "에디터", href: "/editor", icon: PenSquare },
   { label: "Merge", href: "/pdf/merge", icon: Layers },
   { label: "Split", href: "/pdf/split", icon: Scissors },
   { label: "OCR", href: "/pdf/ocr", icon: ScanText },
