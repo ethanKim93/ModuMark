@@ -1,0 +1,173 @@
+'use client';
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import { pdfjsLib } from '@/lib/pdf/pdfViewer';
+import { DropZone } from './DropZone';
+
+interface PdfViewerProps {
+  file?: File | null;
+}
+
+export function PdfViewer({ file }: PdfViewerProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
+  const pdfDocRef = useRef<PDFDocumentProxy | null>(null);
+
+  const [numPages, setNumPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [scale, setScale] = useState(1.2);
+  const [loading, setLoading] = useState(false);
+  const [internalFile, setInternalFile] = useState<File | null>(null);
+
+  const activeFile = file ?? internalFile;
+
+  /* PDF 특정 페이지를 canvas에 렌더링 */
+  const renderPage = useCallback(async (doc: PDFDocumentProxy, pageNum: number, sc: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    /* 진행 중인 렌더 취소 */
+    renderTaskRef.current?.cancel();
+
+    const page = await doc.getPage(pageNum);
+    const viewport = page.getViewport({ scale: sc });
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const task = page.render({ canvasContext: ctx, viewport, canvas });
+    renderTaskRef.current = task;
+
+    try {
+      await task.promise;
+    } catch {
+      /* 취소된 렌더는 무시 */
+    }
+  }, []);
+
+  /* 파일 변경 시 PDF 로드 */
+  useEffect(() => {
+    if (!activeFile) return;
+
+    let cancelled = false;
+    setLoading(true);
+
+    const loadPdf = async () => {
+      try {
+        const arrayBuffer = await activeFile.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const doc = await loadingTask.promise;
+
+        if (cancelled) {
+          doc.destroy();
+          return;
+        }
+
+        /* 이전 문서 해제 */
+        pdfDocRef.current?.destroy();
+        pdfDocRef.current = doc;
+
+        setNumPages(doc.numPages);
+        setCurrentPage(1);
+        await renderPage(doc, 1, scale);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadPdf();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeFile, renderPage, scale]);
+
+  /* 페이지/줌 변경 시 재렌더 */
+  useEffect(() => {
+    if (pdfDocRef.current) {
+      renderPage(pdfDocRef.current, currentPage, scale);
+    }
+  }, [currentPage, scale, renderPage]);
+
+  const SCALES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+
+  if (!activeFile) {
+    return (
+      <DropZone
+        onDrop={(files) => setInternalFile(files[0])}
+        label="PDF 파일을 드래그하거나 클릭하여 뷰어에서 열기"
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* 컨트롤 바 */}
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-border bg-surface shrink-0 flex-wrap">
+        <span className="text-[13px] text-foreground font-medium truncate max-w-[200px]">
+          {activeFile.name}
+        </span>
+
+        {/* 페이지 이동 */}
+        <div className="flex items-center gap-1 ml-auto">
+          <button
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+            className="px-2 py-1 rounded text-[13px] bg-surface-secondary hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            ‹
+          </button>
+          <span className="text-[13px] text-muted-foreground tabular-nums px-1">
+            {currentPage} / {numPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage((p) => Math.min(numPages, p + 1))}
+            disabled={currentPage >= numPages}
+            className="px-2 py-1 rounded text-[13px] bg-surface-secondary hover:bg-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            ›
+          </button>
+        </div>
+
+        {/* 줌 */}
+        <select
+          value={scale}
+          onChange={(e) => setScale(parseFloat(e.target.value))}
+          className="text-[13px] bg-surface-secondary border border-border rounded px-2 py-1 text-foreground"
+        >
+          {SCALES.map((s) => (
+            <option key={s} value={s}>
+              {Math.round(s * 100)}%
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={() => { pdfDocRef.current?.destroy(); pdfDocRef.current = null; setInternalFile(null); setNumPages(0); }}
+          className="text-[13px] text-muted-foreground hover:text-destructive transition-colors ml-1"
+          title="닫기"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* 캔버스 영역 */}
+      <div className="flex-1 overflow-auto flex justify-center bg-background p-4">
+        {loading ? (
+          <div className="flex items-center justify-center w-full">
+            <p className="text-[14px] text-muted-foreground">로딩 중...</p>
+          </div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            className="shadow-lg rounded"
+            style={{ maxWidth: '100%', height: 'auto' }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

@@ -134,6 +134,7 @@
 | .md 파일 기본 앱 등록 | Platform | Windows 파일 연결 |
 | 코드 서명 (Code Signing) | Platform | SmartScreen 경고 방지 |
 | 구조화 데이터 (Schema.org) | Platform | 리치 검색 결과 |
+| **테마 전환 (다크·라이트·시스템)** | Platform | next-themes 기반 3단계 테마 토글. 다크 기본, 라이트·시스템 선택 가능. EditorToolbar 우측 배치 |
 | Ad Blocker 감지·안내 | Monetization | 비폭력적 안내 메시지 |
 
 ### Could Have (Phase 2 검토)
@@ -141,7 +142,6 @@
 | 기능 | 도메인 | 설명 |
 |------|--------|------|
 | PDF → 마크다운 변환 | PDF | PDF 텍스트 레이어 추출 |
-| 테마 (라이트·다크·시스템) | Platform | 앱 설정 |
 | 자동 업데이터 | Platform | 새 버전 감지·설치 |
 | 광고 A/B 테스트 | Monetization | 배치 최적화 |
 | Mermaid 다이어그램 | Editor | Phase 2 검토 |

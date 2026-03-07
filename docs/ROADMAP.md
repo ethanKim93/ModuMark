@@ -155,6 +155,16 @@ Phase 3: 고도화
 
 > **총 태스크 수**: Platform 10 + Editor 7 + PDF 6 + Monetization 2 = **25개**
 
+#### 테스트 태스크 (구현 완료 후 — 필수)
+
+| # | 태스크명 | 범위 | 의존성 | 성공 기준 |
+|---|---------|------|--------|----------|
+| T1 | 테스트 인프라 세팅 | Vitest + Playwright 설치/설정 | 전체 구현 완료 | vitest run, playwright test 실행 가능 |
+| T2 | Phase 1 버그 수정 (QA) | Dialog, markdownToPdf, PDF export | T1 | 보고된 3건 버그 모두 해결 |
+| T3 | 단위 테스트 | tabStore, pdfMerge, pdfSplit, markdownToPdf, environment | T2 | 커버리지 80%+, 0 failures |
+| T4 | 통합 테스트 | Editor↔Tab, Editor↔FileSystem, PDF 플로우 | T3 | 모든 연동 시나리오 통과 |
+| T5 | E2E 테스트 | 에디터, 탭, PDF, 반응형, 공개 페이지 | T4 | Critical Path 100% 통과 |
+
 ---
 
 ## 4. Phase 2: Windows 앱 출시
@@ -166,7 +176,7 @@ Phase 3: 고도화
 
 | 도메인 | 기능 |
 |--------|------|
-| **Platform** | Tauri 2.0 Windows 앱, 코드 서명, .md 파일 연결, GitHub Releases 배포, **세션 백업 인프라** (PL-S7), **앱 다운로드 안내** (PL-S8) |
+| **Platform** | Tauri 2.0 Windows 앱, 코드 서명, .md 파일 연결, GitHub Releases 배포, **세션 백업 인프라** (PL-S7), **앱 다운로드 안내** (PL-S8), **테마 전환 (다크·라이트·시스템)** |
 | **PDF** | OCR (Tesseract.js, 한국어), **PDF 압축** (PDF-S4, PROPOSAL-002) |
 | **Editor** | Undo/Redo(100단계), WYSIWYG↔Raw 모드 전환, 키보드 단축키, **세션 백업** (ED-S7, Tauri 전용), **웹 스토리지 한도 경고** (ED-S8), **Learn More 링크** (ED-S9) |
 | **Monetization** | Ad Blocker 감지·안내, 광고 실패 처리 |
@@ -199,6 +209,7 @@ Phase 3: 고도화
 | P2-5 | GitHub Releases 배포 | PL-M12 | P2-2 | 빌드 파일 GitHub Releases에 업로드, 다운로드 링크 유효 | .github/workflows/ |
 | P2-6 | 세션 백업 인프라 (Tauri) | PL-S7 | P2-4, E2-3 | backup 디렉토리 자동 생성, 파일 CRUD 정상, `%APPDATA%/com.modumark/backup/` 경로 확인 | sessionBackup.ts |
 | P2-7 | 앱 다운로드 안내 시스템 | PL-S8 | P2-1, E2-4 | 웹 스토리지 한도 초과 시 안내 다이얼로그 표시, /download 페이지 CTA 연결 | DownloadPrompt.tsx |
+| P2-8 | 테마 전환 (다크·라이트·시스템) | PRD Should Have | Phase 1 완료 | 다크→라이트→시스템 순환 전환 정상, CSS 변수 교체로 Milkdown·UI 전체 테마 반영, OS 시스템 설정 추적 확인 | ThemeToggle.tsx, ThemeProvider.tsx, globals.css |
 
 #### Editor 도메인
 
@@ -226,7 +237,7 @@ Phase 3: 고도화
 | M2-1 | Ad Blocker 감지·안내 | MON-S1 | Phase 1 M1 완료 | 단위: AdSense URL 차단 시 true 반환. E2E: 차단기 환경에서 안내 배너 표시, 닫기 후 미재표시 | useAdBlockDetect.ts, AdBlockBanner.tsx |
 | M2-2 | 광고 실패 처리 | MON-S2 | Phase 1 M1 완료 | 통합: 광고 로딩 실패 시 슬롯 DOM 제거 및 레이아웃 복구, CLS 없음 | AdSlot.tsx |
 
-> **총 태스크 수**: Platform 7 + Editor 5 + PDF 4 + Monetization 2 = **18개**
+> **총 태스크 수**: Platform 8 + Editor 5 + PDF 4 + Monetization 2 = **19개**
 
 ---
 
