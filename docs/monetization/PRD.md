@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/monetization/BRD.md](./BRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료, AdSense ID 교체 대기) |
 
 ---
 
@@ -27,11 +27,12 @@
 
 | 기능 ID | 기능 | 설명 |
 |---------|------|------|
-| MN-M1 | AdSense 스크립트 통합 | `_document.tsx` 또는 `layout.tsx`에 AdSense 스크립트 로딩 |
-| MN-M2 | 광고 슬롯 컴포넌트 | `<AdSlot position="..." adUnitId="..." />` 재사용 가능 컴포넌트 |
-| MN-M3 | Lazy Loading | 광고 슬롯이 뷰포트 진입 시 로딩 (Intersection Observer API) |
-| MN-M4 | CLS 방지 | 광고 슬롯에 명시적 min-height 설정으로 레이아웃 이동 방지 |
-| MN-M5 | 웹 전용 노출 | `isWebEnvironment()` 확인 후 광고 컴포넌트 렌더링. 데스크탑 앱에서 미노출 |
+| MN-M1 | AdSense 스크립트 통합 | `layout.tsx`에 AdSense 스크립트 async 로딩 ✅ Phase 1 완료 (`NEXT_PUBLIC_ADSENSE_ID=ca-pub-placeholder`, 승인 후 교체 필요) |
+| MN-M2 | 광고 슬롯 컴포넌트 | `<AdSlot />` 재사용 가능 컴포넌트 ✅ Phase 1 완료 (`components/ads/AdSlot.tsx`) |
+| MN-M2-F | FloatingAdSlot 컴포넌트 | 플로팅 광고 슬롯 컴포넌트 ✅ Phase 1 완료 (`components/ads/FloatingAdSlot.tsx`) |
+| MN-M3 | Lazy Loading | 광고 슬롯이 뷰포트 진입 시 로딩 (Intersection Observer API) ✅ Phase 1 완료 |
+| MN-M4 | CLS 방지 | 광고 슬롯에 명시적 min-height 설정으로 레이아웃 이동 방지 ✅ Phase 1 완료 |
+| MN-M5 | 웹 전용 노출 | `isTauriApp()` 확인 후 광고 컴포넌트 렌더링. Tauri 앱에서 미노출 ✅ Phase 1 완료 |
 | MN-M6 | 광고 정책 설정 | AdSense 정책 센터에서 성인·도박 등 부적절 카테고리 차단 |
 
 ### Should Have
@@ -87,7 +88,8 @@ export function AdSlot({ adUnitId, position, className }: AdSlotProps) {
   // ...
   return (
     <div className={cn('ad-slot', className)} style={{ minHeight: AD_MIN_HEIGHTS[position] }}>
-      <ins className="adsbygoogle" data-ad-client="..." data-ad-slot={adUnitId} />
+      {/* data-ad-client: process.env.NEXT_PUBLIC_ADSENSE_ID (현재 ca-pub-placeholder, AdSense 승인 후 실제 ID로 교체) */}
+      <ins className="adsbygoogle" data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID} data-ad-slot={adUnitId} />
     </div>
   )
 }
@@ -183,3 +185,4 @@ AdSense 승인을 위한 사전 요건:
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 반영: MN-M1~M5 완료 표시, FloatingAdSlot 컴포넌트(MN-M2-F) 추가, AdSense ID 환경변수(`ca-pub-placeholder`) 명시, 상태 Active로 변경 | 프로젝트 오너 |

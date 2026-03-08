@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v1.1 |
 | 작성일 | 2026-03-07 |
 | 작성자 | DDD 아키텍트 |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
@@ -26,7 +26,7 @@
 
 ### 컨텍스트 이름: PDF (PDF 처리기)
 
-**목적**: PDF 파일의 뷰어 렌더링, 병합, 분할, OCR 텍스트 추출, 마크다운↔PDF 상호 변환을 담당한다.
+**목적**: PDF 파일의 뷰어 렌더링, 병합, 분할, OCR 텍스트 추출, 마크다운↔PDF 상호 변환을 담당한다. Phase 1에서 `/pdf` 통합 에디터 아키텍처(`PdfEditor.tsx`)가 구현되었으며, `pdfFileStore.ts`가 클라이언트 측 Aggregate Root 역할을 수행한다.
 
 **경계 설명**:
 - PDF 파일 자체의 처리(읽기, 쓰기, 변환)를 책임진다.
@@ -98,7 +98,43 @@
 
 1. PdfDocument는 반드시 유효한 PDF 바이너리에서 생성되어야 한다.
 2. 페이지 번호는 1부터 시작하며 전체 페이지 수를 초과할 수 없다.
-3. 썸네일은 지연 로딩(lazy loading)으로 필요 시점에 생성한다.
+3. 썸네일은 지연 로딩(lazy loading)으로 필요 시점에 생성한다 (`lib/pdf/generateThumbnail.ts`).
+
+---
+
+### 3.3 PdfFileStore (클라이언트 상태 관리)
+
+> Phase 1에서 구현된 Zustand 스토어. `pdfFileStore.ts`가 PDF 파일 목록과 Undo 히스토리를 관리하며, 실질적인 클라이언트 측 Aggregate 역할을 수행한다.
+
+#### PdfFile 엔티티 (스토어 내부)
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| `id` | `string` | 파일 고유 식별자 (UUID) |
+| `file` | `File` | 원본 File 객체 |
+| `name` | `string` | 파일명 |
+| `pageCount` | `number` | 총 페이지 수 |
+| `thumbnail` | `string \| undefined` | 1페이지 썸네일 (Base64, 선택적) |
+| `selectedPages` | `number[]` | 다중 선택된 페이지 번호 목록 |
+
+#### PdfFileStore 구조
+
+| 필드/메서드 | 타입 | 설명 |
+|------------|------|------|
+| `files` | `PdfFile[]` | 현재 파일 목록 (현재 상태) |
+| `history` | `PdfFile[][]` | Undo 히스토리 스냅샷 (최대 30단계) |
+| `addFiles(files)` | 메서드 | 파일 추가. 히스토리에 현재 상태 push |
+| `removeFile(id)` | 메서드 | 파일 제거. 히스토리에 현재 상태 push |
+| `reorderFiles(activeId, overId)` | 메서드 | dnd-kit 드래그 정렬 (`arrayMove` 적용) |
+| `undo()` | 메서드 | 히스토리에서 이전 상태 복원 |
+| `canUndo` | `boolean` | Undo 가능 여부 (`history.length > 0`) |
+
+#### PdfFileStore 비즈니스 규칙
+
+1. `addFiles` / `removeFile` 등 상태 변경 전 현재 `files`를 `history`에 저장한다.
+2. `history` 최대 크기는 30이며, 초과 시 가장 오래된 항목을 제거한다.
+3. `reorderFiles`는 Undo 히스토리에 포함된다.
+4. `undo()`는 `history`가 비어있을 때 호출되면 아무 동작도 하지 않는다.
 
 ---
 
@@ -410,6 +446,17 @@ classDiagram
 | PDF ↔ Editor | Editor | Customer/Supplier (양방향) | 도메인 이벤트 (비동기) | MD→PDF 변환, OCR 결과 전달 |
 | PDF → Platform | Platform | Customer/Supplier | 도메인 이벤트 (비동기) | 변환 결과 파일 저장 요청 |
 | PDF → Monetization | Monetization | Conformist | 도메인 이벤트 (비동기) | 주요 작업 시작 알림 |
+
+---
+
+---
+
+## 문서 이력
+
+| 버전 | 날짜 | 변경 내용 | 작성자 |
+|------|------|----------|--------|
+| v1.0 | 2026-03-07 | 초안 작성 | DDD 아키텍트 |
+| v1.1 | 2026-03-08 | Phase 1 완료 반영: 통합 에디터 컨텍스트 추가. PdfFileStore(Zustand) 구조 반영 — files, history(Undo 30단계), reorderFiles, canUndo. PdfFile 엔티티에 thumbnail, selectedPages 필드 추가. 상태 Active로 변경 | 프로젝트 오너 |
 
 ---
 

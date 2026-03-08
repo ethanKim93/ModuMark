@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('헤더 · 하단 네비 검증', () => {
+test.describe('헤더 · 네비게이션 검증', () => {
   test('데스크탑(1280px): 에디터 헤더 표시', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/editor');
@@ -23,51 +23,25 @@ test.describe('헤더 · 하단 네비 검증', () => {
     await expect(header).toBeVisible();
   });
 
-  test('모바일(375px): MobileNav 하단 네비 표시', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/editor');
-
-    const nav = page.locator('nav.fixed.bottom-0');
-    await expect(nav).toBeVisible();
-  });
-
-  test('데스크탑(1280px): MobileNav 하단 네비 표시 (모든 뷰포트)', async ({ page }) => {
+  test('AppHeader: Markdown · PDF 네비 링크 존재', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/editor');
+    await page.waitForSelector('.milkdown', { timeout: 10000 });
 
-    const nav = page.locator('nav.fixed.bottom-0');
-    await expect(nav).toBeVisible();
+    // AppHeader 내 nav에 링크 2개(Markdown, PDF) 존재
+    const headerNav = page.locator('header nav');
+    const links = headerNav.locator('a');
+    await expect(links).toHaveCount(2);
   });
 
-  test('MobileNav 링크 3개(Editor·Merge·Split) 존재', async ({ page }) => {
+  test('AppHeader PDF 링크 클릭 → PDF 페이지 이동', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/editor');
 
-    const nav = page.locator('nav.fixed.bottom-0');
-    const links = nav.locator('a');
-    await expect(links).toHaveCount(3);
-  });
-
-  test('MobileNav Merge 링크 클릭 → PDF Merge 페이지 이동', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/editor');
-
-    const nav = page.locator('nav.fixed.bottom-0');
-    const link = nav.locator('a[href="/pdf/merge"]');
-    await expect(link).toBeAttached();
-    await link.evaluate((el: HTMLAnchorElement) => el.click());
-    await expect(page).toHaveURL('/pdf/merge');
-  });
-
-  test('MobileNav Split 링크 클릭 → PDF Split 페이지 이동', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/editor');
-
-    const nav = page.locator('nav.fixed.bottom-0');
-    const link = nav.locator('a[href="/pdf/split"]');
-    await expect(link).toBeAttached();
-    await link.evaluate((el: HTMLAnchorElement) => el.click());
-    await expect(page).toHaveURL('/pdf/split');
+    const pdfLink = page.locator('header nav a[href="/pdf"]');
+    await expect(pdfLink).toBeAttached();
+    await pdfLink.evaluate((el: HTMLAnchorElement) => el.click());
+    await expect(page).toHaveURL('/pdf');
   });
 
   test('에디터 헤더: "파일 열기" 버튼 존재', async ({ page }) => {
@@ -91,7 +65,7 @@ test.describe('헤더 · 하단 네비 검증', () => {
 
   test('PdfSidebar: 광고 플레이스홀더 표시', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/pdf/merge');
+    await page.goto('/pdf');
 
     const adPlaceholder = page.locator('[data-testid="ad-placeholder"]').first();
     await expect(adPlaceholder).toBeVisible();

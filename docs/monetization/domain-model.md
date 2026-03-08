@@ -3,10 +3,11 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
+| 수정일 | 2026-03-08 |
 | 작성자 | DDD 아키텍트 |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
@@ -81,7 +82,7 @@
 |-------------|------|
 | `PlacementId` | 광고 배치 고유 식별자 |
 | `AdUnitId` | AdSense 광고 단위 ID |
-| `AdSlotPosition` | 광고 위치 (HEADER / SIDEBAR / CONTENT_BOTTOM / FOOTER) |
+| `AdSlotPosition` | 광고 위치 (HEADER / SIDEBAR / CONTENT_BOTTOM / FOOTER / FLOATING) |
 | `AdSize` | 광고 크기 (responsive / 728x90 / 300x250 등) |
 | `AdStatus` | 광고 상태 (LOADING / LOADED / FAILED / BLOCKED) |
 | `AdDisplayRule` | 광고 노출 조건 (플랫폼, 페이지 타입, 세션 상태) |
@@ -206,6 +207,7 @@ classDiagram
         SIDEBAR_RIGHT
         CONTENT_BOTTOM
         FOOTER
+        FLOATING
     }
 
     class AdStatus {
@@ -263,3 +265,12 @@ classDiagram
 ---
 
 *본 문서는 ModuMark Monetization Bounded Context의 도메인 모델을 정의합니다. Google AdSense 정책 준수 및 광고 배치 전략은 PRD를 참조하세요.*
+
+---
+
+## 문서 이력
+
+| 버전 | 날짜 | 변경 내용 | 작성자 |
+|------|------|----------|--------|
+| v1.0 | 2026-03-07 | 초안 작성 | DDD 아키텍트 |
+| v2.0 | 2026-03-08 | Phase 1 완료 반영: 수정일 추가, 상태 Active로 변경, FloatingAdSlot 반영 (AdSlotPosition에 FLOATING 추가) | 프로젝트 오너 |

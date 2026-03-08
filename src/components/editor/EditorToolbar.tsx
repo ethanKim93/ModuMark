@@ -1,13 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Save, FileDown, FolderOpen } from 'lucide-react';
 import { useTabStore } from '@/stores/tabStore';
 import { openMarkdownFile, saveMarkdownFile } from '@/lib/fileSystem';
 import { markdownToPdf } from '@/lib/pdf/markdownToPdf';
 import { downloadPdf } from '@/lib/pdf/downloadPdf';
 
-export function EditorToolbar() {
+interface EditorToolbarProps {
+  children?: React.ReactNode;
+}
+
+export function EditorToolbar({ children }: EditorToolbarProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const { openTab } = useTabStore();
@@ -93,6 +97,8 @@ export function EditorToolbar() {
         {isExporting ? '변환 중...' : 'PDF 내보내기'}
       </button>
 
+      {/* 추가 툴바 항목 (모드 토글 등) */}
+      {children}
     </div>
   );
 }

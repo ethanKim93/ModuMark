@@ -3,10 +3,11 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
+| 최종 수정 | 2026-03-08 |
 | 상위 문서 | [docs/BRD.md](./BRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료, Phase 2A/2B 진행 예정) |
 
 ---
 
@@ -42,14 +43,17 @@
 
 ### 2.1 프론트엔드 / 웹
 
-| 기술 | 선택 근거 |
-|------|----------|
-| **Next.js 15 (App Router)** | SSR/SSG로 SEO 최적화 필수 (AdSense 승인, 오가닉 트래픽). React Server Components로 초기 로딩 성능 향상. Vercel 무료 배포와 완벽 통합 |
-| **React 19** | Next.js 15의 기본 UI 라이브러리. Concurrent Features로 에디터 렌더링 성능 향상 |
-| **TypeScript** | 타입 안전성으로 에디터·PDF 처리 같은 복잡한 상태 관리 안정화 |
-| **Tailwind CSS** | 유틸리티 CSS로 빠른 UI 개발. 반응형 레이아웃 구현 효율화 |
-| **shadcn/ui** | Radix UI 기반 접근성(Accessibility) 보장 컴포넌트. 커스터마이징 용이 |
-| **Zustand** | 경량 상태 관리. 탭 상태, 에디터 상태 등 복잡한 클라이언트 상태 관리에 적합 |
+| 기술 | 실제 버전 | 선택 근거 |
+|------|----------|----------|
+| **Next.js (App Router)** | **16.1.6** | SSR/SSG로 SEO 최적화 필수. React Server Components로 초기 로딩 성능 향상. Vercel 무료 배포와 완벽 통합 |
+| **React** | **19.2.3** | Concurrent Features로 에디터 렌더링 성능 향상 |
+| **TypeScript** | 최신 | 타입 안전성으로 에디터·PDF 처리 같은 복잡한 상태 관리 안정화 |
+| **Tailwind CSS v4** | **v4 (CSS-first)** | `tailwind.config.ts` 없음, `globals.css`의 `@theme inline` 블록에서 CSS 변수 직접 매핑. 커스텀 다크 변형: `@custom-variant dark (&:is(.dark *))` |
+| **shadcn/ui v4** | **v4 + @base-ui/react** | Radix UI 아님 — `@base-ui/react` 사용. `Dialog` 등 컴포넌트 API 차이 있음 |
+| **Zustand** | **5.0.11** | 경량 상태 관리. 탭 상태(tabStore), PDF 파일 상태(pdfFileStore) 등 관리 |
+| **next-themes** | 최신 | 다크/라이트/시스템 테마 전환. `attribute="class"`, `defaultTheme="dark"` |
+| **lucide-react** | 최신 | 아이콘 라이브러리 |
+| **@dnd-kit** | 최신 | PDF 썸네일 드래그 정렬 (`@dnd-kit/core` + `@dnd-kit/sortable` + `@dnd-kit/utilities`) |
 
 ### 2.2 에디터
 
@@ -121,21 +125,27 @@
 | 반응형 레이아웃 | Platform | 375px ~ 1440px 대응 |
 | Google AdSense 통합 | Monetization | 광고 슬롯 배치, lazy loading |
 
-### Should Have (Phase 1 완성)
+### Should Have (Phase 2A/2B 목표)
 
-| 기능 | 도메인 | 설명 |
-|------|--------|------|
-| PDF OCR (Tesseract.js) | PDF | 스캔·이미지 PDF 텍스트 추출 |
-| Undo/Redo (100단계) | Editor | 편집 이력 관리 |
-| WYSIWYG ↔ Raw 모드 전환 | Editor | 파워 유저 지원 |
-| 단어·글자 수 표시 | Editor | 실시간 문서 통계 |
-| 키보드 단축키 | Editor | Ctrl+B, Ctrl+I, Ctrl+S, Ctrl+T, Ctrl+W |
-| Windows 데스크탑 앱 | Platform | Tauri 2.0 기반 네이티브 앱 |
-| .md 파일 기본 앱 등록 | Platform | Windows 파일 연결 |
-| 코드 서명 (Code Signing) | Platform | SmartScreen 경고 방지 |
-| 구조화 데이터 (Schema.org) | Platform | 리치 검색 결과 |
-| **테마 전환 (다크·라이트·시스템)** | Platform | next-themes 기반 3단계 테마 토글. 다크 기본, 라이트·시스템 선택 가능. EditorToolbar 우측 배치 |
-| Ad Blocker 감지·안내 | Monetization | 비폭력적 안내 메시지 |
+> **✅ 이미 구현됨**: Phase 1에서 Should Have 일부 선구현 완료
+
+| 기능 | 도메인 | 상태 | 설명 |
+|------|--------|------|------|
+| **테마 전환 (다크·라이트·시스템)** | Platform | **✅ 구현 완료** | next-themes 기반 3단계 테마 토글. 다크 기본, CSS 변수 기반 |
+| PDF 페이지 썸네일 미리보기 | PDF | **✅ 구현 완료** | PdfThumbnailList + dnd-kit 드래그 정렬, 다중 선택 |
+| PDF 페이지 추출 | PDF | **✅ 구현 완료** | extractPages.ts, 개별 페이지/범위 추출 |
+| Undo/Redo (에디터) | Editor | Phase 2A | 편집 이력 관리 (Milkdown 플러그인) |
+| WYSIWYG ↔ Raw 모드 전환 | Editor | Phase 2A | 파워 유저 지원 |
+| 키보드 단축키 | Editor | Phase 2A | Ctrl+S, Ctrl+T, Ctrl+W 등 |
+| PDF OCR (Tesseract.js) | PDF | Phase 2A | 스캔·이미지 PDF 텍스트 추출 |
+| PDF 압축 | PDF | Phase 2A | 파일 크기 감소 |
+| Ad Blocker 감지·안내 | Monetization | Phase 2A | 비폭력적 안내 메시지 |
+| Windows 데스크탑 앱 | Platform | Phase 2B | Tauri 2.0 + Next.js 16 PoC 선행 |
+| .md 파일 기본 앱 등록 | Platform | Phase 2B | Windows 파일 연결 |
+| 코드 서명 (Code Signing) | Platform | Phase 2B | SmartScreen 경고 방지 |
+| 세션 백업 | Editor | Phase 2B | 앱 재시작 후 탭 복원 (Tauri 전용) |
+| 웹 스토리지 한도 경고 | Editor | Phase 2A | IndexedDB 50MB 초과 경고 |
+| 구조화 데이터 (Schema.org) | Platform | **✅ 구현 완료** | SoftwareApplication JSON-LD |
 
 ### Could Have (Phase 2 검토)
 
@@ -205,9 +215,9 @@
 | 도메인 | 문서 | 핵심 내용 |
 |--------|------|----------|
 | Editor | [docs/editor/PRD.md](./editor/PRD.md) | Milkdown WYSIWYG, 탭 기반 다중 문서, 파일 관리 |
-| PDF | [docs/pdf/PRD.md](./pdf/PRD.md) | pdf-lib 병합·분할, Tesseract.js OCR, 뷰어 |
-| Platform | [docs/platform/PRD.md](./platform/PRD.md) | Next.js 15, Tauri 2.0, SEO, 자동 업데이터 |
-| Monetization | [docs/monetization/PRD.md](./monetization/PRD.md) | AdSense 통합, 광고 배치 전략 |
+| PDF | [docs/pdf/PRD.md](./pdf/PRD.md) | pdf-lib 병합·분할·추출, Tesseract.js OCR, 썸네일, Undo |
+| Platform | [docs/platform/PRD.md](./platform/PRD.md) | Next.js 16, Tauri 2.0 (Phase 2B), SEO, AppHeader 레이아웃 |
+| Monetization | [docs/monetization/PRD.md](./monetization/PRD.md) | AdSense 통합, FloatingAdSlot, 광고 배치 전략 |
 
 ---
 
@@ -216,6 +226,7 @@
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 반영: 기술 스택 실제 버전 수정(Next.js 16.1.6, shadcn v4+@base-ui, Tailwind v4), MoSCoW 재분류(이미 구현된 기능 표시), Phase 2 → 2A/2B 분리 반영 | 프로젝트 오너 |
 
 ---
 

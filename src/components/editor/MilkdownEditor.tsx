@@ -4,6 +4,7 @@ import { Editor, rootCtx, defaultValueCtx } from '@milkdown/kit/core';
 import { commonmark } from '@milkdown/kit/preset/commonmark';
 import { gfm } from '@milkdown/kit/preset/gfm';
 import { listener, listenerCtx } from '@milkdown/kit/plugin/listener';
+import { history } from '@milkdown/kit/plugin/history';
 import { Milkdown, MilkdownProvider, useEditor } from '@milkdown/react';
 import { nord } from '@milkdown/theme-nord';
 import '@milkdown/theme-nord/style.css';
@@ -31,6 +32,8 @@ function EditorComponent({ defaultValue, onChange }: MilkdownEditorProps) {
       /* GFM 확장: 테이블, 취소선, 태스크 리스트, 자동링크 */
       .use(gfm)
       .use(listener)
+      /* 100단계 Undo/Redo 히스토리 — Ctrl+Z / Ctrl+Y 기본 지원 */
+      .use(history)
   );
 
   return <Milkdown />;

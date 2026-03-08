@@ -3,29 +3,30 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.0 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/ROADMAP.md](../ROADMAP.md) · [docs/monetization/PRD.md](./PRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
-## Phase 1: AdSense 기본 통합 (목표: 출시 기반)
+## Phase 1: AdSense 기본 통합 (목표: 출시 기반) ✅ 완료
 
 **목표**: Google AdSense 기본 광고 슬롯을 통합하고, AdSense 심사 승인 요건을 충족하는 콘텐츠·페이지 구조를 갖춘다.
 
 ### 기능 범위
 
-| 기능 | 우선순위 | 설명 |
-|------|---------|------|
-| AdSense 스크립트 통합 | P0 | `layout.tsx`에 async 방식으로 AdSense 스크립트 로딩 |
-| AdSlot 컴포넌트 | P0 | 재사용 가능한 `<AdSlot />` 컴포넌트 구현 |
-| Lazy Loading 적용 | P0 | Intersection Observer로 뷰포트 진입 시 광고 로딩 |
-| CLS 방지 (min-height) | P0 | 광고 슬롯에 명시적 최소 높이 설정 |
-| 웹 전용 노출 | P0 | `isTauriApp()` 확인, Tauri 앱에서 광고 컴포넌트 미렌더링 |
-| 광고 정책 설정 | P1 | AdSense 정책 센터에서 부적절 카테고리 차단 |
-| 모바일 광고 숨김 | P1 | 375px 미만에서 SIDEBAR_RIGHT 슬롯 숨김 |
-| AdSense 승인 콘텐츠 | P1 | 소개·기능·가이드 페이지 오리지널 콘텐츠 작성 |
+| 기능 | 우선순위 | 완료 여부 |
+|------|---------|---------|
+| AdSense 스크립트 통합 | P0 | ✅ 완료 (`layout.tsx`, `NEXT_PUBLIC_ADSENSE_ID=ca-pub-placeholder`) |
+| AdSlot 컴포넌트 | P0 | ✅ 완료 (`components/ads/AdSlot.tsx`) |
+| FloatingAdSlot 컴포넌트 | P0 | ✅ 완료 (`components/ads/FloatingAdSlot.tsx`) |
+| Lazy Loading 적용 | P0 | ✅ 완료 (Intersection Observer) |
+| CLS 방지 (min-height) | P0 | ✅ 완료 |
+| 웹 전용 노출 | P0 | ✅ 완료 (`isTauriApp()` 확인, Tauri 앱 미렌더링) |
+| 광고 정책 설정 | P1 | AdSense 승인 후 정책 센터에서 설정 예정 |
+| 모바일 광고 숨김 | P1 | ✅ 완료 (375px 미만 SIDEBAR_RIGHT 숨김) |
+| AdSense 승인 콘텐츠 | P1 | ✅ 완료 (/, /security, /privacy, /terms 페이지) |
 
 ### 테스트 기준
 
@@ -40,7 +41,7 @@
 
 ---
 
-## Phase 2: 광고 최적화 (목표: Phase 1 출시 후 3개월)
+## Phase 2A: 광고 최적화 (목표: Phase 1 출시 후 3개월)
 
 **목표**: 광고 뷰어빌리티·CTR·수익을 분석하여 광고 배치를 최적화한다. 광고 차단기 대응을 추가한다.
 
@@ -64,7 +65,7 @@
 
 ---
 
-## Phase 3: 수익 분석 + A/B 테스트 (향후)
+## Phase 2B: 수익 분석 + A/B 테스트 (향후)
 
 **목표**: 광고 배치 전략을 데이터 기반으로 개선하여 RPM·CTR을 높인다.
 
@@ -90,3 +91,4 @@
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 체크박스 반영 (AdSlot, FloatingAdSlot, Lazy Loading 등), Phase 2를 2A(광고 최적화)/2B(A/B 테스트)로 분리, AdSense ID 환경변수 명시 | 프로젝트 오너 |

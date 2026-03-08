@@ -83,16 +83,21 @@ docs/
 
 **도메인**: Editor, PDF, Platform, Monetization
 
-**현황**: 문서 체계 구축 완료 (BRD·PRD·ROADMAP·domain-model·Figma 디자인 시스템). 코드 구현 단계 대기 중.
+**현황**: Phase 1 MVP 완료 (25/25 태스크). Vercel 배포 완료. Phase 2 진행 예정.
 
 ## 기술 스택
 
-- **Framework**: Next.js 15 (App Router), React 19
+- **Framework**: Next.js 16.1.6 (App Router), React 19.2.3
 - **Language**: TypeScript (any 타입 사용 금지)
-- **Styling**: Tailwind CSS
-- **UI**: shadcn/ui
-- **상태관리**: Zustand
-- **폼**: React Hook Form + Zod
+- **Styling**: Tailwind CSS v4 (CSS-first, `tailwind.config.ts` 없음, `globals.css`의 `@theme inline` 사용)
+- **UI**: shadcn/ui v4 + `@base-ui/react` (Radix UI 아님)
+- **상태관리**: Zustand 5.0.11
+- **테마**: next-themes (다크/라이트/시스템)
+- **에디터**: @milkdown/kit + @milkdown/react + @milkdown/theme-nord (v7.19.0)
+- **PDF**: pdfjs-dist 5.5.207 + pdf-lib + @pdf-lib/fontkit
+- **아이콘**: lucide-react
+- **드래그**: @dnd-kit/core + @dnd-kit/sortable + @dnd-kit/utilities
+- **테스트**: Vitest v4 + Playwright
 
 ## 개발 명령어
 
@@ -131,6 +136,73 @@ npx tsc --noEmit
 - **Gap 분석**: `docs/figma/gap-analysis.md` 참조, 미결 사항은 `feature-proposals.md` 참조
 - **Visual Regression**: Phase 완료 시 e2e-tester가 스크린샷 비교 (허용 오차 1%)
 - **반응형**: 375px(모바일) / 768px(태블릿) / 1280px+(데스크탑) 필수 대응
+
+## 실제 파일 구조 (Phase 1 완료 기준)
+
+```
+src/
+├── app/
+│   ├── globals.css          # 디자인 토큰 (@theme inline), Milkdown 오버라이드
+│   ├── layout.tsx           # Inter 폰트, ThemeProvider, AdSense Script
+│   ├── not-found.tsx        # 404 페이지
+│   ├── page.tsx             # 랜딩 페이지
+│   ├── editor/page.tsx      # 에디터 페이지
+│   ├── pdf/page.tsx         # PDF 통합 에디터 (병합·분할·뷰어)
+│   ├── pdf/merge/page.tsx   # PDF 병합 (하위 라우트)
+│   ├── pdf/split/page.tsx   # PDF 분할 (하위 라우트)
+│   ├── pdf/ocr/             # OCR (Phase 2 예정)
+│   ├── security/page.tsx
+│   ├── privacy/page.tsx
+│   └── terms/page.tsx
+├── components/
+│   ├── ads/AdSlot.tsx             # Intersection Observer + Tauri 환경 분기
+│   ├── editor/
+│   │   ├── EditorCanvas.tsx       # Ctrl+S, beforeunload, useAutoSave
+│   │   ├── EditorCanvasLoader.tsx # dynamic(ssr:false) 래퍼
+│   │   ├── EditorToolbar.tsx      # 저장/PDF내보내기 버튼
+│   │   ├── MilkdownEditor.tsx     # Milkdown WYSIWYG
+│   │   └── UnsavedChangesDialog.tsx
+│   ├── layout/
+│   │   ├── AppHeader.tsx          # 상단 헤더
+│   │   ├── AppShell.tsx           # 전체 레이아웃 쉘
+│   │   ├── TabBar.tsx             # 탭 바
+│   │   ├── PdfSidebar.tsx         # PDF 사이드바
+│   │   ├── ThemeToggle.tsx        # dark→light→system 순환, mounted 가드
+│   │   └── FloatingAdSlot.tsx     # 플로팅 광고 슬롯
+│   ├── providers/
+│   │   └── ThemeProvider.tsx      # next-themes, attribute="class", defaultTheme="dark"
+│   ├── pdf/
+│   │   ├── DropZone.tsx
+│   │   ├── PdfEditor.tsx          # PDF 통합 에디터
+│   │   ├── PdfEditorLoader.tsx    # dynamic(ssr:false) 래퍼
+│   │   ├── PdfPageViewer.tsx      # 개별 페이지 뷰어
+│   │   ├── PdfThumbnailList.tsx   # 썸네일 목록 (dnd-kit 정렬)
+│   │   ├── PdfViewer.tsx
+│   │   ├── PdfMergeClient.tsx     # 병합 클라이언트 래퍼
+│   │   ├── DownloadDialog.tsx     # 다운로드 다이얼로그
+│   │   ├── FileValidationAlert.tsx
+│   │   └── ProcessingProgress.tsx
+│   ├── seo/JsonLd.tsx
+│   └── ui/                        # shadcn/ui 컴포넌트
+├── hooks/
+│   ├── useAutoSave.ts             # 30초 디바운스 자동 저장
+│   └── useEnvironment.ts          # Tauri 환경 감지
+├── lib/
+│   ├── environment.ts             # isTauriApp(), getEnvironment()
+│   ├── fileSystem.ts              # openMarkdownFile, saveMarkdownFile
+│   ├── metadata.ts, structured-data.ts
+│   └── pdf/
+│       ├── pdfViewer.ts           # PDF.js 초기화
+│       ├── pdfMerge.ts            # mergePdfs + onProgress
+│       ├── pdfSplit.ts            # splitPdf + onProgress
+│       ├── markdownToPdf.ts       # pdf-lib 변환 (NotoSansKR 한글 지원)
+│       ├── downloadPdf.ts
+│       ├── extractPages.ts        # 페이지 추출
+│       └── generateThumbnail.ts   # 썸네일 생성
+└── stores/
+    ├── tabStore.ts                # Zustand 탭 상태 관리
+    └── pdfFileStore.ts            # PDF 파일 상태 + Undo 히스토리
+```
 
 ## 아키텍처
 

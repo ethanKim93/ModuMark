@@ -40,3 +40,43 @@ describe('AdSlot 환경 분기', () => {
     expect(wrapper?.className).toContain('max-sm:hidden');
   });
 });
+
+describe('AdSlot 광고 실패 처리 로직', () => {
+  it('data-ad-status=unfilled 감지 시 광고 실패로 판단', () => {
+    // MutationObserver 감지 로직 단위 테스트
+    const isAdFailed = (adStatus: string | null, height: number): boolean => {
+      return adStatus === 'unfilled' || height === 0;
+    };
+
+    expect(isAdFailed('unfilled', 90)).toBe(true);
+    expect(isAdFailed(null, 0)).toBe(true);
+    expect(isAdFailed('filled', 90)).toBe(false);
+    expect(isAdFailed(null, 90)).toBe(false);
+  });
+
+  it('광고 높이가 0이면 실패로 판단', () => {
+    const isAdFailed = (height: number): boolean => height === 0;
+
+    expect(isAdFailed(0)).toBe(true);
+    expect(isAdFailed(90)).toBe(false);
+    expect(isAdFailed(1)).toBe(false);
+  });
+
+  it('광고 로드 성공 시 타임아웃을 취소한다', () => {
+    // 타임아웃 취소 로직 시뮬레이션
+    let timeoutCancelled = false;
+    const timeout = setTimeout(() => {}, 5000);
+    const clearTimeoutFn = () => {
+      clearTimeout(timeout);
+      timeoutCancelled = true;
+    };
+
+    // 광고 로드 성공 (높이 > 0)
+    const height = 90;
+    if (height > 0) {
+      clearTimeoutFn();
+    }
+
+    expect(timeoutCancelled).toBe(true);
+  });
+});

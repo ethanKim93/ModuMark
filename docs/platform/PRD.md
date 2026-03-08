@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.1 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/platform/BRD.md](./BRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
@@ -23,7 +23,9 @@
 
 ## 1. 기술 선정
 
-### 1.1 Next.js 15 (App Router)
+### 1.1 Next.js 16.1.6 (App Router)
+
+> **실제 설치 버전**: `create-next-app@latest` 결과 Next.js 16.1.6 설치됨. (문서 초안의 v15와 다름)
 
 **선택 근거**:
 - **SEO 필수**: React Server Components(RSC)로 서버 사이드 렌더링. 검색 엔진 크롤러가 완전한 HTML 수신 → Google AdSense 승인 조건 충족
@@ -31,18 +33,34 @@
 - Vercel 무료 티어와 최적화 통합. 자동 CDN, Edge Network
 - 동적 라우팅으로 향후 기능 확장 용이
 
+**실제 기술 스택 (Phase 1 구현 완료)**:
+- **shadcn/ui v4** + `@base-ui/react` (Radix UI 아님)
+- **Tailwind CSS v4** CSS-first 설정 (`@theme inline` in globals.css, `tailwind.config.ts` 없음)
+- **next-themes**: 다크/라이트/시스템 테마 전환 (`ThemeProvider.tsx`, `ThemeToggle.tsx`)
+
 ### 1.2 Tauri 2.0 (데스크탑 앱)
 
 **선택 근거**:
 - **경량 번들**: Rust 기반 네이티브 코어 + WebView2. Electron 대비 설치 파일 크기 ~10배 작음 (Electron ~100MB vs Tauri ~10-15MB)
 - **보안 강화**: 최소 권한 원칙. FS, Dialog 등 Tauri 플러그인을 명시적으로 활성화
-- Next.js 15 웹앱을 WebView로 직접 실행 → 웹/앱 코드 재사용
+- Next.js 16.1.6 웹앱을 WebView로 직접 실행 → 웹/앱 코드 재사용
 - Windows 파일 연결(.md 기본 앱) 등록 지원
 - 자동 업데이터 플러그인 내장
 
-**검증 필요 사항**: Tauri 2.0 + Next.js 15 App Router 통합 PoC (SSR 비활성화, 정적 export 또는 standalone 모드).
+**검증 필요 사항**: Tauri 2.0 + Next.js 16.1.6 App Router 통합 PoC (SSR 비활성화, 정적 export 또는 standalone 모드).
 
 **대안 (Electron)**: Tauri PoC 실패 시. Next.js와의 통합 레퍼런스 다수. 번들 크기 큰 것이 단점.
+
+### 1.3 레이아웃 컴포넌트 (Phase 1 구현 완료)
+
+| 컴포넌트 | 역할 |
+|----------|------|
+| `AppShell.tsx` | 전체 레이아웃 래퍼 (사이드바 + 메인 영역) |
+| `AppHeader.tsx` | 상단 헤더 (탭바 포함) |
+| `TabBar.tsx` | 탭 기반 다중 문서 관리 |
+| `PdfSidebar.tsx` | PDF 도구 전용 사이드바 |
+| `ThemeToggle.tsx` | 다크/라이트/시스템 테마 전환 |
+| `ThemeProvider.tsx` | next-themes 기반 테마 프로바이더 |
 
 ### 1.3 Vercel (웹 배포)
 
@@ -59,7 +77,7 @@
 
 | 기능 ID | 기능 | 설명 |
 |---------|------|------|
-| PL-M1 | Next.js 웹 앱 배포 | Vercel 무료 티어에 Next.js 15 App Router 앱 배포 |
+| PL-M1 | Next.js 웹 앱 배포 | Vercel 무료 티어에 Next.js 16.1.6 App Router 앱 배포 ✅ Phase 1 완료 |
 | PL-M2 | SEO 기본 구조 | 공개 페이지 SSR/SSG, 페이지별 고유 메타태그 |
 | PL-M3 | sitemap.xml | 자동 생성·제공. 모든 공개 페이지 포함 |
 | PL-M4 | robots.txt | 검색 엔진 크롤링 허용 설정 |
@@ -75,7 +93,7 @@
 | PL-S2 | 코드 서명 | Windows SmartScreen 경고 방지 |
 | PL-S3 | .md 파일 연결 | Windows에서 .md 파일 더블클릭 시 ModuMark 실행 |
 | PL-S4 | 구조화 데이터 | SoftwareApplication Schema.org JSON-LD |
-| PL-S5 | 다크 모드 지원 | 시스템 설정 연동 + 수동 전환 |
+| PL-S5 | 다크 모드 지원 | 시스템 설정 연동 + 수동 전환 ✅ Phase 1 구현 완료 (next-themes, ThemeToggle.tsx) |
 | PL-S6 | 보안 안내 페이지 | "파일이 서버에 전송되지 않습니다" 명시적 안내 |
 | PL-S7 | 세션 백업 인프라 (Tauri 앱 전용) | Tauri `app_data_dir()` API로 백업 디렉토리 접근. `{APP_DATA_DIR}/backup/` 경로에 `session.json` + `tab_{uuid}.md.bak` 파일 관리. Tauri FS 플러그인 사용. PROPOSAL-005 채택 |
 | PL-S8 | 앱 다운로드 안내 시스템 | 웹 환경 IndexedDB 50MB 소프트 한도 초과 시 표시하는 앱 다운로드 안내 UI. 다운로드 페이지(`/download`)로 연결하는 CTA 포함 다이얼로그. PROPOSAL-005 채택 |
@@ -234,3 +252,4 @@ GitHub Releases에 .exe/.msi 파일 업로드
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v1.1 | 2026-03-07 | PROPOSAL-005 채택: PL-S7 (세션 백업 인프라), PL-S8 (앱 다운로드 안내 시스템) Should Have 추가 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 반영: Next.js 16.1.6 기재, shadcn v4+@base-ui/react, Tailwind v4 CSS-first, next-themes 테마 전환(PL-S5) Phase 1 완료 표시, 레이아웃 컴포넌트 목록 현행화(AppShell, AppHeader, TabBar, PdfSidebar, ThemeToggle, ThemeProvider) | 프로젝트 오너 |

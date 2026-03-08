@@ -3,34 +3,34 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.1 |
+| 문서 버전 | v2.0 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/ROADMAP.md](../ROADMAP.md) · [docs/platform/PRD.md](./PRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
-## Phase 1: Next.js 웹 서비스 + SEO (목표: 최초 출시)
+## Phase 1: Next.js 웹 서비스 + SEO (목표: 최초 출시) ✅ 완료
 
-**목표**: Vercel에 Next.js 15 기반 웹 서비스를 배포하고, AdSense 승인을 위한 SEO·콘텐츠 기반을 구축한다.
+**목표**: Vercel에 Next.js 16.1.6 기반 웹 서비스를 배포하고, AdSense 승인을 위한 SEO·콘텐츠 기반을 구축한다.
 
 ### 기능 범위
 
-| 기능 | 우선순위 | 설명 |
-|------|---------|------|
-| Next.js 15 App Router 웹 앱 | P0 | Vercel 배포, 정적 공개 페이지 |
-| 소개 페이지 (/) | P0 | 서비스 소개, 기능 목록, AdSense 승인용 콘텐츠 |
-| 에디터 페이지 (/editor) | P0 | 에디터 도메인 웹 진입점 |
-| PDF 기능 페이지 (/pdf) | P0 | PDF 도메인 웹 진입점 |
-| 다운로드 페이지 (/download) | P0 | Windows 앱 다운로드 링크 |
-| 메타태그·OG 태그 | P0 | 페이지별 고유 title, description, OG |
-| sitemap.xml | P0 | 자동 생성 |
-| robots.txt | P0 | 크롤링 허용 설정 |
-| 반응형 레이아웃 | P0 | 375px ~ 1440px |
-| **보안 안내 페이지** | P1 | "파일이 서버에 전송되지 않습니다" 안내. 보안 민감 사용자 대상 |
-| 개인정보처리방침 페이지 | P1 | AdSense 승인 요건 |
-| 이용약관 페이지 | P1 | AdSense 승인 요건 |
-| 구조화 데이터 (JSON-LD) | P1 | SoftwareApplication Schema.org |
+| 기능 | 우선순위 | 완료 여부 |
+|------|---------|---------|
+| Next.js 16.1.6 App Router 웹 앱 | P0 | ✅ 완료 (Vercel 배포) |
+| 소개 페이지 (/) | P0 | ✅ 완료 |
+| 에디터 페이지 (/editor) | P0 | ✅ 완료 |
+| PDF 기능 페이지 (/pdf/merge, /pdf/split) | P0 | ✅ 완료 |
+| 메타태그·OG 태그 | P0 | ✅ 완료 |
+| sitemap.xml | P0 | ✅ 완료 |
+| robots.txt | P0 | ✅ 완료 |
+| 반응형 레이아웃 (375px ~ 1440px) | P0 | ✅ 완료 |
+| **보안 안내 페이지 (/security)** | P1 | ✅ 완료 |
+| 개인정보처리방침 페이지 (/privacy) | P1 | ✅ 완료 |
+| 이용약관 페이지 (/terms) | P1 | ✅ 완료 |
+| 구조화 데이터 (JSON-LD) | P1 | ✅ 완료 |
+| **테마 전환 (다크/라이트/시스템)** | P1 | ✅ 완료 (next-themes, 원래 P2 예정 → Phase 1 선행 구현) |
 
 ### 테스트 기준
 
@@ -45,30 +45,44 @@
 
 ---
 
-## Phase 2: Tauri 데스크탑 앱 (목표: Phase 1 안정화 후)
+## Phase 2A: 웹 서비스 안정화 (목표: Phase 1 출시 후)
 
-**목표**: Windows 데스크탑 앱을 출시하여 Typora 대안으로서의 네이티브 경험을 제공한다.
-
-### 전제 조건
-
-- Tauri 2.0 + Next.js 15 통합 PoC 완료 (Phase 1 착수 전 또는 병행)
-- PoC 실패 시 Electron으로 대안 진행
+**목표**: Phase 1 출시 후 웹 서비스 성능·SEO 최적화 및 AdSense 승인 준비를 강화한다.
 
 ### 기능 범위
 
 | 기능 | 우선순위 | 설명 |
 |------|---------|------|
-| Tauri 2.0 앱 빌드 | P0 | Windows .exe/.msi 빌드 |
-| 코드 서명 (Code Signing) | P0 | SmartScreen 경고 방지 |
-| .md 파일 연결 등록 | P0 | Windows 파일 기본 앱으로 ModuMark 등록 |
-| 로컬 파일 시스템 접근 | P0 | Tauri FS 플러그인으로 파일 읽기·쓰기 |
-| GitHub Releases 배포 | P0 | 빌드 파일 GitHub Releases에 업로드 |
-| 다크 모드 | P1 | 시스템 설정 연동 |
-| 창 상태 저장·복원 | P1 | 크기·위치 저장 |
-| **세션 백업 인프라 (Tauri)** | P1 | `app_data_dir()` API로 `{APP_DATA_DIR}/backup/` 디렉토리 관리. session.json + tab_{uuid}.md.bak 파일 읽기·쓰기·삭제. PL-S7 구현 |
-| **앱 다운로드 안내 시스템** | P2 | 웹 환경 스토리지 한도 초과 시 앱 다운로드 안내 다이얼로그 + `/download` 페이지 CTA. PL-S8 구현 |
+| Lighthouse SEO 90점 이상 달성 | P0 | Core Web Vitals 최적화 |
+| 다운로드 페이지 (/download) | P1 | Windows 앱 출시 후 다운로드 링크 제공 |
+| AdSense 심사 신청 | P1 | 트래픽·콘텐츠 충분 시 신청 |
 
-### 테스트 기준
+---
+
+## Phase 2B: Tauri 데스크탑 앱 (목표: Phase 2A 완료 후)
+
+**목표**: Windows 데스크탑 앱을 출시하여 Typora 대안으로서의 네이티브 경험을 제공한다.
+
+### 전제 조건
+
+- **P2-0**: Tauri 2.0 + Next.js 16.1.6 통합 PoC 완료 (Phase 2B 첫 태스크)
+- PoC 실패 시 Electron으로 대안 진행
+
+### 기능 범위
+
+| 기능 ID | 기능 | 우선순위 | 설명 |
+|---------|------|---------|------|
+| P2-0 | Tauri + Next.js 16 PoC | P0 | Tauri 2.0 + Next.js 16.1.6 통합 가능성 검증 (신규) |
+| P2-1 | Tauri 2.0 앱 빌드 | P0 | Windows .exe/.msi 빌드 |
+| P2-2 | 코드 서명 (Code Signing) | P0 | SmartScreen 경고 방지 |
+| P2-3 | .md 파일 연결 등록 | P0 | Windows 파일 기본 앱으로 ModuMark 등록 |
+| P2-4 | 로컬 파일 시스템 접근 | P0 | Tauri FS 플러그인으로 파일 읽기·쓰기 |
+| P2-5 | GitHub Releases 배포 | P0 | 빌드 파일 GitHub Releases에 업로드 |
+| P2-6 | 창 상태 저장·복원 | P1 | 크기·위치 저장 |
+| P2-7 | **세션 백업 인프라 (Tauri)** | P1 | `app_data_dir()` API로 `{APP_DATA_DIR}/backup/` 디렉토리 관리. session.json + tab_{uuid}.md.bak 파일 읽기·쓰기·삭제. PL-S7 구현 |
+| — | **앱 다운로드 안내 시스템** | P2 | 웹 환경 스토리지 한도 초과 시 앱 다운로드 안내 다이얼로그 + `/download` 페이지 CTA. PL-S8 구현 |
+
+### 테스트 기준 (Phase 2B)
 
 | 테스트 유형 | 범위 | 성공 기준 |
 |-----------|------|----------|
@@ -109,3 +123,4 @@
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v1.1 | 2026-03-07 | Phase 2에 세션 백업 인프라 (PL-S7), 앱 다운로드 안내 시스템 (PL-S8) 추가 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 체크박스 반영, 테마 전환 Phase 1 구현 완료 기록, Phase 2를 2A(웹 안정화)/2B(Tauri)로 분리, P2-0(Tauri+Next.js 16 PoC) 신규 추가, Next.js 버전 16.1.6으로 정정 | 프로젝트 오너 |

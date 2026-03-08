@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { FileText } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { StorageWarning } from './StorageWarning';
 
 const navItems = [
   { label: 'Markdown', href: '/editor' },
@@ -14,6 +15,7 @@ export function AppHeader() {
   const pathname = usePathname();
 
   return (
+    <>
     <header className="flex items-center gap-3 px-4 py-2 border-b border-border bg-surface shrink-0">
       {/* 로고 */}
       <Link href="/" className="flex items-center gap-1.5 text-foreground font-bold text-base shrink-0">
@@ -48,5 +50,8 @@ export function AppHeader() {
         <ThemeToggle />
       </div>
     </header>
+    {/* 스토리지 사용량 80% 초과 시 경고 배너 */}
+    <StorageWarning />
+    </>
   );
 }

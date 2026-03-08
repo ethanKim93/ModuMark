@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
-import path from 'path';
 
 test.describe('PDF 병합 페이지', () => {
   test.beforeEach(async ({ page }) => {
+    // /pdf/merge → /pdf 로 redirect
     await page.goto('/pdf/merge');
   });
 
-  test('PDF 병합 페이지 접근 시 200 응답', async ({ page }) => {
-    expect(page.url()).toContain('/pdf/merge');
+  test('PDF 병합 페이지 접근 시 /pdf로 리다이렉트', async ({ page }) => {
+    await expect(page).toHaveURL('/pdf');
     await expect(page.locator('body')).toBeVisible();
   });
 
@@ -20,11 +20,12 @@ test.describe('PDF 병합 페이지', () => {
 
 test.describe('PDF 분할 페이지', () => {
   test.beforeEach(async ({ page }) => {
+    // /pdf/split → /pdf 로 redirect
     await page.goto('/pdf/split');
   });
 
-  test('PDF 분할 페이지 접근 시 200 응답', async ({ page }) => {
-    expect(page.url()).toContain('/pdf/split');
+  test('PDF 분할 페이지 접근 시 /pdf로 리다이렉트', async ({ page }) => {
+    await expect(page).toHaveURL('/pdf');
     await expect(page.locator('body')).toBeVisible();
   });
 

@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v1.1 |
-| 작성일 | 2026-03-07 |
+| 문서 버전 | v2.0 |
+| 작성일 | 2026-03-08 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/editor/BRD.md](./BRD.md) |
-| 상태 | 초안 (Draft) |
+| 상태 | Active (Phase 1 완료) |
 
 ---
 
@@ -43,6 +43,18 @@
 
 - 탭 목록, 활성 탭, 각 탭의 에디터 상태를 Zustand 스토어로 관리
 - 경량·단순 API로 복잡한 탭 상태를 예측 가능하게 관리
+
+### 1.3 실제 구현 기술 스택 (Phase 1 기준)
+
+| 기술 | 버전 | 비고 |
+|------|------|------|
+| Next.js | 16.1.6 | App Router (문서 표기 v15와 다름 — create-next-app@latest 결과) |
+| React | 19.2.3 | |
+| Tailwind CSS | v4 CSS-first | `tailwind.config.ts` 없음, `globals.css`의 `@theme inline` 블록 사용 |
+| shadcn/ui | v4 + @base-ui/react | Radix UI 아님. `base-nova` 스타일 |
+| Zustand | 5.0.11 | |
+| @milkdown/kit + @milkdown/react + @milkdown/theme-nord | 7.19.0 | `nord` 테마는 `.config(nord)`로 적용 |
+| next-themes | 최신 | 다크/라이트/시스템 테마 전환. `attribute="class"`, `defaultTheme="dark"` |
 
 ---
 
@@ -214,7 +226,7 @@ interface Tab {
 - **즉각 반응**: 버튼 클릭·키 입력에 100ms 이내 시각적 피드백
 - **데이터 손실 방지**: 미저장 탭 닫기·앱 종료 시 반드시 확인
 - **상태 명시**: 탭에 저장 상태, 상태 바에 문서 통계 항상 표시
-- **접근성**: shadcn/ui Radix 기반으로 WCAG 2.1 AA 준수
+- **접근성**: shadcn/ui v4 + @base-ui/react 기반으로 WCAG 2.1 AA 준수
 
 ---
 
@@ -224,3 +236,4 @@ interface Tab {
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v1.1 | 2026-03-07 | PROPOSAL-005 채택: ED-S7 (세션 백업), ED-S8 (웹 스토리지 한도) Should Have 추가. PROPOSAL-006 채택: ED-S9 (Learn More 링크) 추가 | 프로젝트 오너 |
+| v2.0 | 2026-03-08 | Phase 1 완료 반영. 기술 스택 실제 버전 수정 (Next.js 16.1.6, shadcn/ui v4 + @base-ui/react, Tailwind CSS v4 CSS-first). 1.3 실제 구현 기술 스택 섹션 추가. 상태 Active로 변경 | 프로젝트 오너 |

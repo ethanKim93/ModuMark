@@ -1,4 +1,6 @@
 /* File System Access API 래퍼 (마크다운 파일 열기/저장) */
+/* Tauri 환경에서는 @tauri-apps/plugin-fs 사용 */
+import { isTauriApp } from './environment';
 
 export interface OpenedFile {
   content: string;
@@ -8,6 +10,40 @@ export interface OpenedFile {
 
 /* .md 파일 열기 */
 export async function openMarkdownFile(): Promise<OpenedFile | null> {
+  // Tauri 환경: plugin-dialog로 파일 선택 → plugin-fs로 읽기
+  if (isTauriApp()) {
+    return openMarkdownFileTauri();
+  }
+  return openMarkdownFileWeb();
+}
+
+/** Tauri 환경에서 .md 파일 열기 */
+async function openMarkdownFileTauri(): Promise<OpenedFile | null> {
+  try {
+    const { open } = await import('@tauri-apps/plugin-dialog');
+    const { readTextFile } = await import('@tauri-apps/plugin-fs');
+
+    const selected = await open({
+      filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
+      multiple: false,
+    });
+
+    if (!selected || typeof selected !== 'string') return null;
+
+    const content = await readTextFile(selected);
+    const name = selected.split(/[\\/]/).pop() ?? 'untitled.md';
+
+    // Tauri에서는 FileHandle 대신 경로 문자열 사용
+    // handle은 null로 설정하고 path를 별도로 관리
+    return { content, handle: null, name };
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('cancelled')) return null;
+    throw err;
+  }
+}
+
+/** 웹 환경에서 .md 파일 열기 (기존 로직) */
+async function openMarkdownFileWeb(): Promise<OpenedFile | null> {
   try {
     if (typeof window !== 'undefined' && 'showOpenFilePicker' in window) {
       /* 모던 브라우저: File System Access API */
@@ -52,6 +88,44 @@ export async function openMarkdownFile(): Promise<OpenedFile | null> {
 
 /* .md 파일 저장 (fileHandle 있으면 덮어쓰기, 없으면 Save As) */
 export async function saveMarkdownFile(
+  content: string,
+  existingHandle: FileSystemFileHandle | null
+): Promise<{ handle: FileSystemFileHandle; name: string } | null> {
+  if (isTauriApp()) {
+    return saveMarkdownFileTauri(content);
+  }
+  return saveMarkdownFileWeb(content, existingHandle);
+}
+
+/** Tauri 환경에서 .md 파일 저장 */
+async function saveMarkdownFileTauri(
+  content: string
+): Promise<{ handle: FileSystemFileHandle; name: string } | null> {
+  try {
+    const { save } = await import('@tauri-apps/plugin-dialog');
+    const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+
+    const savePath = await save({
+      filters: [{ name: 'Markdown', extensions: ['md'] }],
+      defaultPath: 'untitled.md',
+    });
+
+    if (!savePath) return null;
+
+    await writeTextFile(savePath, content);
+    const name = savePath.split(/[\\/]/).pop() ?? 'untitled.md';
+
+    // Tauri에서는 FileSystemFileHandle 없이 경로만 반환
+    // null을 handle로 반환하고 name만 사용
+    return null;
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('cancelled')) return null;
+    throw err;
+  }
+}
+
+/** 웹 환경에서 .md 파일 저장 (기존 로직) */
+async function saveMarkdownFileWeb(
   content: string,
   existingHandle: FileSystemFileHandle | null
 ): Promise<{ handle: FileSystemFileHandle; name: string } | null> {
