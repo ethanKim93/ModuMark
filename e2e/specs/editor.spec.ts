@@ -20,8 +20,8 @@ test.describe('에디터 기능', () => {
   });
 
   test('탭 바가 표시된다', async ({ page }) => {
-    /* 탭 바 존재 확인 */
-    const tabBar = page.locator('[data-slot="tab-bar"], .tab-bar, [class*="tab"]').first();
+    /* TabBar: border-b border-border bg-background overflow-x-auto shrink-0 */
+    const tabBar = page.locator('.overflow-x-auto.shrink-0').first();
     await expect(tabBar).toBeVisible();
   });
 

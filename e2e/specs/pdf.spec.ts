@@ -12,8 +12,8 @@ test.describe('PDF 병합 페이지', () => {
   });
 
   test('드롭 존 영역이 표시된다', async ({ page }) => {
-    /* DropZone 컴포넌트 확인 */
-    const dropZone = page.locator('[class*="drop"], [class*="upload"]').first();
+    /* DropZone: role="button" + border-dashed 클래스를 가진 div */
+    const dropZone = page.locator('[role="button"][class*="border-dashed"]').first();
     await expect(dropZone).toBeVisible();
   });
 });
@@ -29,7 +29,7 @@ test.describe('PDF 분할 페이지', () => {
   });
 
   test('드롭 존 영역이 표시된다', async ({ page }) => {
-    const dropZone = page.locator('[class*="drop"], [class*="upload"]').first();
+    const dropZone = page.locator('[role="button"][class*="border-dashed"]').first();
     await expect(dropZone).toBeVisible();
   });
 });

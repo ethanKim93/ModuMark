@@ -45,3 +45,51 @@ export async function mergePdfs(files: File[], onProgress?: ProgressCallback): P
   onProgress?.(100, '완료!');
   return result;
 }
+
+export interface MergePageSpec {
+  file: File;
+  pageIndex: number;  // 0-based
+}
+
+/**
+ * 개별 페이지 스펙 목록을 받아 지정 순서대로 병합.
+ * 같은 파일이 여러 번 참조될 경우 PDFDocument 로드를 캐시.
+ */
+export async function mergePagesPdf(
+  specs: MergePageSpec[],
+  onProgress?: ProgressCallback,
+): Promise<Uint8Array> {
+  if (specs.length === 0) {
+    throw new PdfMergeError('TOO_MANY_FILES', '병합할 페이지가 없습니다.');
+  }
+
+  onProgress?.(0, '파일 읽는 중...');
+  const mergedPdf = await PDFDocument.create();
+
+  // 파일명 기준 PDFDocument 캐시
+  const fileCache = new Map<string, PDFDocument>();
+
+  for (let i = 0; i < specs.length; i++) {
+    const { file, pageIndex } = specs[i];
+    onProgress?.(Math.round((i / specs.length) * 80), `페이지 처리 중 (${i + 1}/${specs.length})`);
+
+    let srcPdf = fileCache.get(file.name);
+    if (!srcPdf) {
+      try {
+        const bytes = await file.arrayBuffer();
+        srcPdf = await PDFDocument.load(bytes);
+        fileCache.set(file.name, srcPdf);
+      } catch {
+        throw new PdfMergeError('ENCRYPTED', `"${file.name}": 암호화된 PDF는 지원하지 않습니다.`);
+      }
+    }
+
+    const [page] = await mergedPdf.copyPages(srcPdf, [pageIndex]);
+    mergedPdf.addPage(page);
+  }
+
+  onProgress?.(90, 'PDF 생성 중...');
+  const result = await mergedPdf.save();
+  onProgress?.(100, '완료!');
+  return result;
+}

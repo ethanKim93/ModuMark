@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
-import { EditorSidebar } from "@/components/layout/EditorSidebar";
 import { TabBar } from "@/components/layout/TabBar";
 import { EditorCanvasLoader } from "@/components/editor/EditorCanvasLoader";
+import { FloatingAdSlot } from "@/components/layout/FloatingAdSlot";
 
 export const metadata: Metadata = {
   title: "마크다운 에디터",
@@ -15,9 +15,12 @@ export const metadata: Metadata = {
 
 export default function EditorPage() {
   return (
-    <AppShell sidebar={<EditorSidebar />}>
-      <TabBar />
-      <EditorCanvasLoader />
-    </AppShell>
+    <>
+      <AppShell>
+        <TabBar />
+        <EditorCanvasLoader />
+      </AppShell>
+      <FloatingAdSlot />
+    </>
   );
 }

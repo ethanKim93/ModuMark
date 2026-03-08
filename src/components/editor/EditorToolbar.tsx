@@ -1,16 +1,27 @@
 'use client';
 
 import { useState } from 'react';
-import { Save, FileDown } from 'lucide-react';
-import { ThemeToggle } from '@/components/layout/ThemeToggle';
+import { Save, FileDown, FolderOpen } from 'lucide-react';
 import { useTabStore } from '@/stores/tabStore';
-import { saveMarkdownFile } from '@/lib/fileSystem';
+import { openMarkdownFile, saveMarkdownFile } from '@/lib/fileSystem';
 import { markdownToPdf } from '@/lib/pdf/markdownToPdf';
 import { downloadPdf } from '@/lib/pdf/downloadPdf';
 
 export function EditorToolbar() {
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const { openTab } = useTabStore();
+
+  const handleOpenFile = async () => {
+    const result = await openMarkdownFile();
+    if (!result) return;
+    openTab({
+      title: result.name,
+      content: result.content,
+      isDirty: false,
+      fileHandle: result.handle ?? undefined,
+    });
+  };
 
   const handleSave = async () => {
     const store = useTabStore.getState();
@@ -50,6 +61,17 @@ export function EditorToolbar() {
   return (
     <div className="flex items-center gap-1 px-3 py-1.5 border-b border-border bg-surface shrink-0">
       <button
+        onClick={handleOpenFile}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[13px] text-muted-foreground hover:text-foreground hover:bg-surface-secondary transition-colors"
+        title="파일 열기"
+      >
+        <FolderOpen className="h-3.5 w-3.5" />
+        파일 열기
+      </button>
+
+      <div className="w-px h-4 bg-border mx-0.5" />
+
+      <button
         onClick={handleSave}
         disabled={isSaving}
         className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[13px] text-muted-foreground hover:text-foreground hover:bg-surface-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -71,11 +93,6 @@ export function EditorToolbar() {
         {isExporting ? '변환 중...' : 'PDF 내보내기'}
       </button>
 
-      {/* 우측 영역 — 테마 토글 */}
-      <div className="ml-auto flex items-center gap-1">
-        <div className="w-px h-4 bg-border mx-0.5" />
-        <ThemeToggle />
-      </div>
     </div>
   );
 }

@@ -111,6 +111,12 @@ ROADMAP은 **PRD의 기능을 어떤 순서로, 어느 범위까지 구현할지
 - 테스트 실패 시 해당 테스트 에이전트가 자동으로 실패 원인 분석 및 수정 시도
 - 3회 이상 실패 시 상위 에이전트(메인)에 에스컬레이션
 
+### 필수 실행 규칙 (MANDATORY)
+- Phase 구현 완료 후 테스트를 건너뛰는 것은 금지
+- `npm run build` 통과만으로는 Phase 완료 불가
+- 테스트 태스크가 shrimp-task-manager에 등록되어야 Phase 태스크 목록이 완전한 것
+- 테스트 실패 시 구현 코드를 수정하고 재테스트 (최대 3회)
+
 ## 도메인별 태스크 관리 전략
 
 shrimp-task-manager에 네이티브 도메인 필드가 없으므로 컨벤션으로 관리한다.
@@ -163,6 +169,14 @@ mcp__shrimp-task-manager__query_task(keyword="[Editor]")
    - 태스크명: `[{Domain}] Phase{N}: {태스크명}` (ROADMAP 테이블의 태스크명 사용)
    - 의존성: ROADMAP 테이블의 의존성 컬럼 참조 (# 번호 → 태스크명 매핑)
 4. **첫 번째 태스크 실행 시작**: `execute_task`로 의존성 없는 첫 태스크 자동 실행
+5. **구현 태스크 전체 완료 후 테스트 태스크 자동 생성** (`split_tasks(updateMode: "append")`):
+   - `[Test] Phase{N}: 테스트 인프라 세팅`
+   - `[Test] Phase{N}: 버그 수정 (QA)`
+   - `[Test] Phase{N}: 단위 테스트 (unit-tester 에이전트 호출)`
+   - `[Test] Phase{N}: 통합 테스트 (integration-tester 에이전트 호출)`
+   - `[Test] Phase{N}: E2E 테스트 (e2e-tester 에이전트 호출)`
+6. 테스트 태스크는 구현 태스크와 동일 Phase에 포함 — 별도 Phase로 분리 금지
+7. **Phase 완료 선언 조건**: 구현 태스크 + 테스트 태스크 모두 통과 시에만 완료
 
 ### 태스크 필수 포함 항목
 

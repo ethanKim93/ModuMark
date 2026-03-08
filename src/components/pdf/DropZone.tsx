@@ -59,8 +59,8 @@ export function DropZone({ onDrop, accept = 'application/pdf', multiple = false,
         type="file"
         accept={accept}
         multiple={multiple}
-        className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        className="sr-only"
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ''; }}
       />
     </div>
   );

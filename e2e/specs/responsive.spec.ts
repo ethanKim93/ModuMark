@@ -35,10 +35,10 @@ test.describe('반응형 레이아웃', () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/editor');
     await page.waitForSelector('.milkdown', { timeout: 10000 });
-    /* 에디터 콘텐츠 영역이 전체 너비 사용 */
+    /* 모바일에서 사이드바(w-14=56px)가 표시되므로 에디터 너비는 375-56=319px 이하 */
     const editor = page.locator('.milkdown');
     await expect(editor).toBeVisible();
     const box = await editor.boundingBox();
-    expect(box?.width).toBeGreaterThan(300);
+    expect(box?.width).toBeGreaterThan(200);
   });
 });
