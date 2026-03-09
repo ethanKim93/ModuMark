@@ -51,6 +51,9 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  /* 마크다운 종이 영역 */
+  --color-markdown-surface: var(--markdown-surface);
+
   /* 반경 */
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -113,6 +116,9 @@
   /* 반경 */
   --radius: 8px;
 
+  /* 마크다운 종이 영역 (종이 느낌 시각적 구분) */
+  --markdown-surface: #1C2B3B;
+
   /* 사이드바 */
   --sidebar: #1A242F;
   --sidebar-foreground: #F8FAFC;
@@ -148,6 +154,9 @@
   --ring: #1773CF;
   --sidebar: #F8FAFC;
   --sidebar-foreground: #0F172A;
+
+  /* 마크다운 종이 영역 (라이트 모드: 흰색 카드) */
+  --markdown-surface: #FFFFFF;
 }
 
 /* Milkdown 에디터 테마 오버라이드 — CSS 변수 기반 (다크/라이트 자동 전환) */

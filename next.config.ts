@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import withSerwistInit from "@serwist/next";
 
 const isTauriApp = process.env.TAURI_ENV_TARGET_TRIPLE !== undefined;
 
@@ -13,6 +14,17 @@ const nextConfig: NextConfig = {
       unoptimized: true,
     },
   }),
+
+  // Turbopack 명시적 설정 (serwist webpack 플러그인과 공존)
+  turbopack: {},
 };
 
-export default nextConfig;
+// Tauri 빌드(정적 export)나 dev 환경에서는 PWA 서비스 워커 비활성화
+// 프로덕션 웹 빌드에서만 PWA 활성화
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: isTauriApp || process.env.NODE_ENV !== "production",
+});
+
+export default withSerwist(nextConfig);

@@ -1,0 +1,43 @@
+{
+  "name": "ModuMark - 마크다운 편집기 + PDF 도구",
+  "short_name": "ModuMark",
+  "description": "무료 마크다운 WYSIWYG 편집기 + PDF 통합 도구. 파일이 서버로 전송되지 않습니다.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111921",
+  "theme_color": "#1773CF",
+  "orientation": "any",
+  "categories": ["productivity", "utilities"],
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "마크다운 에디터",
+      "short_name": "에디터",
+      "description": "마크다운 파일 편집",
+      "url": "/markdown",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "PDF 도구",
+      "short_name": "PDF",
+      "description": "PDF 병합·분할·편집",
+      "url": "/pdf",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

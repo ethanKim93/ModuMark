@@ -151,7 +151,7 @@ mcp__context7__query-docs(id, "Button Card Tabs Dialog")
 
 ### 타당한 Gap → BRD/PRD 능동 업데이트
 Figma에 있고 PRD에 없지만 서비스 품질에 타당한 기능:
-1. `docs/BRD.md` 또는 `docs/{domain}/BRD.md`에 비즈니스 규칙 추가
+1. `docs/{domain}/BRD.md`에 비즈니스 규칙 추가
 2. `docs/{domain}/PRD.md`에 기능 요구사항 추가 (MoSCoW 분류)
 3. `docs/figma/gap-analysis.md`에 "반영됨" 기록
 

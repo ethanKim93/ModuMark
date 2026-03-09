@@ -7,7 +7,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { StorageWarning } from './StorageWarning';
 
 const navItems = [
-  { label: 'Markdown', href: '/editor' },
+  { label: 'Markdown', href: '/markdown' },
   { label: 'PDF', href: '/pdf' },
 ];
 

@@ -25,7 +25,7 @@ tools:
 - 서비스 → 리포지토리 → 파일 시스템/DB 연동
 - 도메인 이벤트 발행 → 구독 → 처리 흐름
 - API 엔드포인트 → 서비스 → 응답 전체 흐름
-- 여러 도메인 간 통신 (Editor → PDF 변환 요청 등)
+- 여러 도메인 간 통신 (Markdown → PDF 변환 요청 등)
 
 ## 기술 스택
 
@@ -53,9 +53,9 @@ tests/
 `docs/{domain}/domain-model.md`의 Context Map을 참고하여 도메인 간 통신 시나리오를 도출한다:
 
 ```
-Editor → PDF: ExportToPdfRequested 이벤트 → MarkdownToPdfCompleted
+Markdown → PDF: ExportToPdfRequested 이벤트 → MarkdownToPdfCompleted
 PDF → Platform: MergeJobCompleted 이벤트 → 파일 저장
-Editor ↔ Platform: 파일 열기/저장 연동
+Markdown ↔ Platform: 파일 열기/저장 연동
 ```
 
 ### 테스트 패턴
@@ -100,7 +100,7 @@ describe('통합: {시나리오 이름}', () => {
 
 ## 주요 통합 테스트 시나리오
 
-### Editor 도메인
+### Markdown 도메인
 - 마크다운 파일 열기 → 편집 → 저장 → 다시 읽기 일관성 검증
 - 자동 저장 트리거 → 파일 실제 저장 확인
 - PDF 변환 요청 → PDF 도메인 이벤트 수신 확인
@@ -108,10 +108,10 @@ describe('통합: {시나리오 이름}', () => {
 ### PDF 도메인
 - PDF 파일 로드 → 페이지 렌더링 → 썸네일 생성 흐름
 - 병합 작업 요청 → 작업 상태 추적 → 결과 파일 생성 확인
-- OCR 작업 → 텍스트 추출 결과 Editor 도메인 전달 확인
+- OCR 작업 → 텍스트 추출 결과 Markdown 도메인 전달 확인
 
 ### Platform 도메인
-- Tauri 파일 다이얼로그 → 파일 선택 → Editor 도메인 로드 흐름
+- Tauri 파일 다이얼로그 → 파일 선택 → Markdown 도메인 로드 흐름
 - Next.js API Route → Service → 파일 처리 흐름
 
 ### Monetization 도메인

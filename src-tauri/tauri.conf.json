@@ -39,7 +39,8 @@
     "windows": {
       "certificateThumbprint": null,
       "digestAlgorithm": "sha256",
-      "timestampUrl": "http://timestamp.digicert.com"
+      "timestampUrl": "http://timestamp.digicert.com",
+      "webviewInstallMode": { "type": "downloadBootstrapper" }
     },
     "linux": {},
     "macOS": {},
@@ -50,10 +51,26 @@
         "name": "Markdown",
         "mimeType": "text/markdown",
         "description": "Markdown Document"
+      },
+      {
+        "ext": ["pdf"],
+        "name": "PDF Document",
+        "mimeType": "application/pdf",
+        "description": "PDF Document"
       }
     ]
   },
   "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://github.com/modumark/modumark/releases/latest/download/latest.json"
+      ],
+      "dialog": false,
+      "headers": {
+        "Authorization": ""
+      }
+    },
     "fs": {
       "all": true,
       "readFile": true,
@@ -69,7 +86,12 @@
         "allow": [
           { "path": "$HOME/**" },
           { "path": "$DOCUMENT/**" },
-          { "path": "$APPDATA/com.modumark/**" }
+          { "path": "$DESKTOP/**" },
+          { "path": "$DOWNLOAD/**" },
+          { "path": "$APPDATA/com.modumark/**" },
+          { "path": "**/*.md" },
+          { "path": "**/*.markdown" },
+          { "path": "**/*.pdf" }
         ]
       }
     },

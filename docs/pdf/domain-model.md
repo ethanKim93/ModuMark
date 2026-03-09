@@ -92,7 +92,7 @@
 | `PageRange` | 페이지 범위 (시작~끝) | 범위 값으로 비교 |
 | `PdfMetadata` | 제목, 작성자, 생성일, 파일 크기 등 | 파일에서 읽은 불변 정보 |
 | `Thumbnail` | 페이지 썸네일 이미지 (Base64) | 렌더링 결과물 |
-| `ViewerState` | 현재 뷰어 상태 (줌 레벨, 현재 페이지) | 뷰 상태 값 |
+| `ViewerState` | 현재 뷰어 상태 (줌 레벨, 현재 페이지, 표시 모드, 렌더 스케일). `displayMode`: `"edit" \| "viewer" \| "ocr"`. `renderScale`: devicePixelRatio 기반 배율 | 뷰 상태 값 |
 
 #### PdfDocument 비즈니스 규칙
 
@@ -365,6 +365,7 @@ classDiagram
         +PageNumber currentPage
         +number zoomLevel
         +String displayMode
+        +number renderScale
     }
 
     class OcrResult {
@@ -457,6 +458,7 @@ classDiagram
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | DDD 아키텍트 |
 | v1.1 | 2026-03-08 | Phase 1 완료 반영: 통합 에디터 컨텍스트 추가. PdfFileStore(Zustand) 구조 반영 — files, history(Undo 30단계), reorderFiles, canUndo. PdfFile 엔티티에 thumbnail, selectedPages 필드 추가. 상태 Active로 변경 | 프로젝트 오너 |
+| v2.1 | 2026-03-09 | ViewerState Value Object 보강: displayMode(`"edit" \| "viewer" \| "ocr"`) 타입 명시, renderScale(number) 필드 추가 | 프로젝트 오너 |
 
 ---
 

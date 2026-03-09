@@ -75,10 +75,10 @@ e2e/
 ## Page Object Model (POM) 패턴
 
 ```typescript
-// e2e/pages/editor.page.ts
+// e2e/pages/markdown.page.ts
 import { Page, Locator } from '@playwright/test'
 
-export class EditorPage {
+export class MarkdownPage {
   readonly editor: Locator
   readonly saveButton: Locator
   readonly exportPdfButton: Locator
@@ -104,11 +104,11 @@ export class EditorPage {
 
 ```typescript
 import { test, expect } from '@playwright/test'
-import { EditorPage } from '../pages/editor.page'
+import { MarkdownPage } from '../pages/markdown.page'
 
-test.describe('에디터: 마크다운 작성 및 저장', () => {
+test.describe('마크다운 에디터: 마크다운 작성 및 저장', () => {
   test('사용자가 마크다운을 입력하고 저장할 수 있다', async ({ page }) => {
-    const editorPage = new EditorPage(page)
+    const editorPage = new MarkdownPage(page)
 
     // 1. 에디터 페이지 접속
     await editorPage.goto()
@@ -152,7 +152,7 @@ test.describe('에디터: 마크다운 작성 및 저장', () => {
 
 다음 시나리오는 반드시 100% 통과해야 한다:
 
-### Editor 도메인
+### Markdown 도메인
 1. 새 마크다운 문서 생성 → 내용 입력 → 저장
 2. 기존 .md 파일 열기 → 편집 → 저장
 3. 마크다운 작성 → PDF 내보내기 버튼 클릭 → PDF 다운로드 확인
@@ -193,7 +193,7 @@ const viewports = [
   { name: 'desktop', width: 1440, height: 900 },
 ]
 
-test.describe('Visual Regression: 에디터 화면', () => {
+test.describe('Visual Regression: 마크다운 화면', () => {
   for (const vp of viewports) {
     test(`${vp.name} 뷰포트 레이아웃 확인`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height })
@@ -201,7 +201,7 @@ test.describe('Visual Regression: 에디터 화면', () => {
 
       // 허용 오차: 최대 1% 픽셀 차이 허용
       await expect(page).toHaveScreenshot(
-        `editor-${vp.name}.png`,
+        `markdown-${vp.name}.png`,
         { maxDiffPixelRatio: 0.01 }
       )
     })

@@ -3,11 +3,15 @@ import Link from "next/link";
 import { FileText, Layers, Scissors, Shield, PanelTop, CloudOff } from "lucide-react";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { getSoftwareApplicationSchema } from "@/lib/structured-data";
+import { LandingHeader } from "@/components/layout/LandingHeader";
 
 export const metadata: Metadata = {
   title: "ModuMark - 무료 마크다운 편집기 + PDF 통합 도구",
   description:
     "브라우저에서 즉시 사용하는 무료 마크다운 WYSIWYG 편집기. PDF 병합·분할·변환까지. 파일은 외부 서버로 전송되지 않습니다.",
+  alternates: {
+    canonical: "https://modumark.app",
+  },
   openGraph: {
     title: "ModuMark - 무료 마크다운 편집기 + PDF 통합 도구",
     description:
@@ -48,23 +52,7 @@ export default function Home() {
       <JsonLd data={getSoftwareApplicationSchema()} />
       <div className="min-h-screen bg-background text-foreground">
         {/* 네비게이션 바 */}
-        <header className="border-b border-border px-6 py-3 flex items-center justify-between">
-          <span className="text-xl font-bold text-primary">ModuMark</span>
-          <nav className="flex items-center gap-4">
-            <Link href="/editor" className="text-base text-muted-foreground hover:text-foreground transition-colors">
-              에디터
-            </Link>
-            <Link href="/pdf/merge" className="text-base text-muted-foreground hover:text-foreground transition-colors">
-              PDF 도구
-            </Link>
-            <Link
-              href="/editor"
-              className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-base font-medium hover:bg-primary/90 transition-colors"
-            >
-              시작하기
-            </Link>
-          </nav>
-        </header>
+        <LandingHeader />
 
         <main className="max-w-5xl mx-auto px-6">
           {/* Hero 섹션 */}
@@ -83,10 +71,10 @@ export default function Home() {
             </p>
             <div className="flex gap-3 justify-center">
               <Link
-                href="/editor"
+                href="/markdown"
                 className="px-6 py-3 bg-primary text-primary-foreground rounded-lg text-base font-medium hover:bg-primary/90 transition-colors"
               >
-                지금 편집 시작
+                마크다운 시작
               </Link>
               <Link
                 href="/pdf/merge"
@@ -157,7 +145,7 @@ export default function Home() {
               </li>
               <li className="flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary shrink-0" />
-                <span><strong className="text-foreground">마크다운 → PDF 변환</strong> — 에디터에서 바로 PDF로 내보내기</span>
+                <span><strong className="text-foreground">마크다운 → PDF 변환</strong> — 마크다운에서 바로 PDF로 내보내기</span>
               </li>
             </ul>
             <Link

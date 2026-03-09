@@ -4,7 +4,7 @@ import { useState } from "react";
 import { X, Plus } from "lucide-react";
 import { useTabStore } from "@/stores/tabStore";
 import { saveMarkdownFile } from "@/lib/fileSystem";
-import { UnsavedChangesDialog } from "@/components/editor/UnsavedChangesDialog";
+import { UnsavedChangesDialog } from "@/components/markdown/UnsavedChangesDialog";
 
 export function TabBar() {
   const { tabs, activeTabId, switchTab, closeTab, openTab } = useTabStore();

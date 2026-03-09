@@ -5,6 +5,9 @@ import { Download, Monitor, Shield, Zap, HardDrive } from 'lucide-react';
 export const metadata: Metadata = {
   title: '데스크탑 앱 다운로드',
   description: 'ModuMark Windows 데스크탑 앱을 다운로드하세요. 로컬 파일 무제한 저장, 오프라인 지원, 광고 없이 이용 가능합니다.',
+  alternates: {
+    canonical: 'https://modumark.app/download',
+  },
 };
 
 const GITHUB_RELEASES_URL = 'https://github.com/modumark/modumark/releases/latest';
@@ -74,7 +77,7 @@ export default function DownloadPage() {
         {/* 웹 버전으로 돌아가기 */}
         <div className="text-center">
           <Link
-            href="/editor"
+            href="/markdown"
             className="text-[13px] text-muted-foreground hover:text-foreground underline underline-offset-2 transition-colors"
           >
             웹 버전 계속 사용하기

@@ -4,7 +4,7 @@ description: |
   PRD(Product Requirements Document) 전문 서브에이전트. 다음 상황에서 사용한다:
   - BRD의 비즈니스 요구사항을 제품 기능 명세로 전환할 때
   - 사용자 스토리, 기능 요구사항, 비기능 요구사항을 정의할 때
-  - docs/PRD.md 또는 docs/{domain}/PRD.md를 작성하거나 검토/개선할 때
+  - docs/{domain}/PRD.md를 작성하거나 검토/개선할 때
   - 기능 우선순위(MoSCoW)를 결정할 때
 tools:
   - Read
@@ -130,12 +130,11 @@ PRD 작성 전 다음 Figma 참조 단계를 수행한다:
 
 ## 작업 방식
 
-1. `docs/BRD.md`를 반드시 먼저 읽고 비즈니스 목표를 파악한다.
+1. 해당 도메인의 `docs/{domain}/BRD.md`를 반드시 먼저 읽고 비즈니스 목표를 파악한다.
 2. ddd-architect가 정의한 도메인 구조를 참고한다.
 3. **Figma 디자인 참조 단계** (위 참고)를 수행한다.
 4. **기술 조사 워크플로우** (위 참고)를 수행한다.
-5. 전체 PRD는 `docs/PRD.md`에 작성한다.
-6. 도메인별 상세 PRD는 `docs/{domain}/PRD.md`에 작성한다.
+5. 도메인별 PRD를 `docs/{domain}/PRD.md`에 작성한다.
 7. 기능 목록을 MoSCoW로 분류하고 우선순위를 명확히 한다.
 8. 각 도메인 PRD 완성 후 roadmap-planner 에이전트에 ROADMAP 생성을 위임한다:
    - 전달 내용: 해당 도메인 PRD 파일 경로, Must Have/Should Have/Could Have 기능 목록
@@ -193,8 +192,7 @@ PRD 작성 전 다음 Figma 참조 단계를 수행한다:
 
 ## 출력 파일
 
-- `docs/PRD.md` (전체 제품 요구사항)
-- `docs/{domain}/PRD.md` (도메인별 상세 요구사항)
+- `docs/{domain}/PRD.md` (도메인별 제품 요구사항)
 
 ## 언어 규칙
 

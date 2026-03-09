@@ -3,7 +3,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.0 |
+| 문서 버전 | v2.2 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/platform/BRD.md](./BRD.md) |
 | 상태 | Active (Phase 1 완료) |
@@ -44,7 +44,7 @@
 - **경량 번들**: Rust 기반 네이티브 코어 + WebView2. Electron 대비 설치 파일 크기 ~10배 작음 (Electron ~100MB vs Tauri ~10-15MB)
 - **보안 강화**: 최소 권한 원칙. FS, Dialog 등 Tauri 플러그인을 명시적으로 활성화
 - Next.js 16.1.6 웹앱을 WebView로 직접 실행 → 웹/앱 코드 재사용
-- Windows 파일 연결(.md 기본 앱) 등록 지원
+- Windows 파일 연결(.md/.pdf 기본 앱) 등록 지원 + 파일 타입별 자동 라우팅
 - 자동 업데이터 플러그인 내장
 
 **검증 필요 사항**: Tauri 2.0 + Next.js 16.1.6 App Router 통합 PoC (SSR 비활성화, 정적 export 또는 standalone 모드).
@@ -61,6 +61,7 @@
 | `PdfSidebar.tsx` | PDF 도구 전용 사이드바 |
 | `ThemeToggle.tsx` | 다크/라이트/시스템 테마 전환 |
 | `ThemeProvider.tsx` | next-themes 기반 테마 프로바이더 |
+| `LandingHeader.tsx` | 랜딩 페이지 전용 헤더 (ThemeToggle 포함, 클라이언트 컴포넌트) |
 
 ### 1.3 Vercel (웹 배포)
 
@@ -91,9 +92,10 @@
 |---------|------|------|
 | PL-S1 | Windows 데스크탑 앱 | Tauri 2.0 기반 .exe/.msi 설치 파일 |
 | PL-S2 | 코드 서명 | Windows SmartScreen 경고 방지 |
-| PL-S3 | .md 파일 연결 | Windows에서 .md 파일 더블클릭 시 ModuMark 실행 |
+| PL-S3 | .md/.pdf 파일 연결 | Windows에서 .md 파일 더블클릭 → `/markdown` 에디터 실행, .pdf 파일 더블클릭 → `/pdf` 뷰어 실행. 파일 타입별 자동 라우팅 |
+| PL-S9 | 파일 타입별 자동 라우팅 | 파일 연결로 열린 파일의 타입(.md → markdown, .pdf → pdf)에 따라 올바른 페이지로 자동 이동. `?openFile=` 쿼리 파라미터 활용 |
 | PL-S4 | 구조화 데이터 | SoftwareApplication Schema.org JSON-LD |
-| PL-S5 | 다크 모드 지원 | 시스템 설정 연동 + 수동 전환 ✅ Phase 1 구현 완료 (next-themes, ThemeToggle.tsx) |
+| PL-S5 | 다크 모드 지원 | 시스템 설정 연동 + 수동 전환. **랜딩 페이지 포함 모든 페이지에서 테마 토글 제공** ✅ Phase 1 구현 완료 (next-themes, ThemeToggle.tsx), 랜딩 페이지 Phase 2A 보완 예정 |
 | PL-S6 | 보안 안내 페이지 | "파일이 서버에 전송되지 않습니다" 명시적 안내 |
 | PL-S7 | 세션 백업 인프라 (Tauri 앱 전용) | Tauri `app_data_dir()` API로 백업 디렉토리 접근. `{APP_DATA_DIR}/backup/` 경로에 `session.json` + `tab_{uuid}.md.bak` 파일 관리. Tauri FS 플러그인 사용. PROPOSAL-005 채택 |
 | PL-S8 | 앱 다운로드 안내 시스템 | 웹 환경 IndexedDB 50MB 소프트 한도 초과 시 표시하는 앱 다운로드 안내 UI. 다운로드 페이지(`/download`)로 연결하는 CTA 포함 다이얼로그. PROPOSAL-005 채택 |
@@ -115,9 +117,11 @@
 |----|--------|----------|
 | US-PL-01 | 나는 설치 없이 웹 브라우저에서 즉시 ModuMark를 사용하고 싶다 | 웹 URL 접속 후 2초 이내 에디터 사용 가능. 설치나 로그인 불필요 |
 | US-PL-02 | 나는 Google에서 "무료 마크다운 에디터"를 검색하여 ModuMark를 찾고 싶다 | 핵심 키워드로 Google 검색 30위 이내 노출 (출시 6개월) |
-| US-PL-03 | 나는 Windows에서 .md 파일을 더블클릭하여 ModuMark가 자동으로 열리게 하고 싶다 | 앱 설치 후 .md 파일 연결 등록 옵션 제공. 더블클릭 시 ModuMark 실행 |
+| US-PL-03 | 나는 Windows에서 .md 또는 .pdf 파일을 더블클릭하여 ModuMark가 자동으로 열리게 하고 싶다 | 앱 설치 후 .md/.pdf 파일 연결 등록 옵션 제공. 더블클릭 시 파일 타입에 따라 올바른 페이지에서 ModuMark 실행 |
 | US-PL-04 | 나는 보안 담당자로서 ModuMark가 파일을 서버에 보내지 않는다는 것을 공식 문서에서 확인하고 싶다 | 소개 페이지 및 개인정보 처리방침에 "모든 파일 처리는 로컬에서 수행됩니다" 명시 |
 | US-PL-05 | 나는 앱을 설치할 때 바이러스 경고 없이 안전하게 설치하고 싶다 | 코드 서명된 .exe/.msi 설치 파일 제공. Windows SmartScreen 경고 없음 |
+| US-PL-06 | 나는 첫 방문 시(랜딩 페이지) 다크/라이트 모드를 전환하고 싶다 | 랜딩 페이지 우측 상단에 ThemeToggle 버튼 표시. 다크 → 라이트 → 시스템 순환 동작. 페이지 이동 후에도 설정 유지 |
+| US-PL-07 | 나는 Windows에서 .pdf 파일을 더블클릭하여 ModuMark PDF 뷰어로 열고 싶다 | 앱 설치 후 .pdf 파일을 더블클릭하면 ModuMark `/pdf` 뷰어 페이지에서 해당 파일이 자동으로 열림 |
 
 ---
 
@@ -253,3 +257,5 @@ GitHub Releases에 .exe/.msi 파일 업로드
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v1.1 | 2026-03-07 | PROPOSAL-005 채택: PL-S7 (세션 백업 인프라), PL-S8 (앱 다운로드 안내 시스템) Should Have 추가 | 프로젝트 오너 |
 | v2.0 | 2026-03-08 | Phase 1 완료 반영: Next.js 16.1.6 기재, shadcn v4+@base-ui/react, Tailwind v4 CSS-first, next-themes 테마 전환(PL-S5) Phase 1 완료 표시, 레이아웃 컴포넌트 목록 현행화(AppShell, AppHeader, TabBar, PdfSidebar, ThemeToggle, ThemeProvider) | 프로젝트 오너 |
+| v2.1 | 2026-03-09 | PL-S5 설명 보강: 랜딩 페이지 포함 전체 페이지 테마 토글. LandingHeader.tsx 추가. US-PL-06 추가: 랜딩 페이지 테마 전환 사용자 스토리 | 프로젝트 오너 |
+| v2.2 | 2026-03-09 | PL-S3 확장: `.md/.pdf 파일 연결` + 파일 타입별 라우팅. PL-S9 신규: 파일 타입별 자동 라우팅. US-PL-03 확장: `.md 또는 .pdf 파일`. US-PL-07 신규: .pdf 파일 → PDF 뷰어. Tauri 설명 `.md/.pdf 파일 연결`로 변경 | 프로젝트 오너 |

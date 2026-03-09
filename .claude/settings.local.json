@@ -15,7 +15,9 @@
       "mcp__playwright__browser_wait_for",
       "mcp__playwright__browser_click",
       "mcp__playwright__browser_snapshot",
-      "mcp__playwright__browser_console_messages"
+      "mcp__playwright__browser_console_messages",
+      "Skill(domain-tasks-create)",
+      "Skill(domain-tasks-run)"
     ]
   }
 }

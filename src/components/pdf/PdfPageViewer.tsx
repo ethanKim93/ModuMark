@@ -50,11 +50,14 @@ function PageCanvas({
         const scale = Math.max((containerWidth - 32) / viewport.width, 0.1);
         const scaledViewport = page.getViewport({ scale });
 
-        canvasRef.current.width = Math.floor(scaledViewport.width);
-        canvasRef.current.height = Math.floor(scaledViewport.height);
+        // 고해상도 디스플레이(Retina) 대응: 물리 픽셀로 canvas 크기 설정
+        const dpr = window.devicePixelRatio || 1;
+        canvasRef.current.width = Math.floor(scaledViewport.width * dpr);
+        canvasRef.current.height = Math.floor(scaledViewport.height * dpr);
 
         const ctx = canvasRef.current.getContext('2d');
         if (!ctx) return;
+        ctx.scale(dpr, dpr);
 
         await page.render({
           canvasContext: ctx,

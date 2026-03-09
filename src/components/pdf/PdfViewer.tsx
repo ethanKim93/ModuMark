@@ -4,19 +4,36 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { pdfjsLib } from '@/lib/pdf/pdfViewer';
 import { DropZone } from './DropZone';
+import { usePdfFileStore } from '@/stores/pdfFileStore';
 
 interface PdfViewerProps {
   file?: File | null;
+  /** 탭 ID: 제공 시 페이지/줌 상태를 스토어에 저장·복원 */
+  fileId?: string;
+  /** 사이드바 썸네일 클릭으로 페이지 이동 요청 (0-indexed, Task 5에서 연동) */
+  currentPageIndex?: number;
+  /** PDF 로드 완료 시 pdfDoc 전달 콜백 (사이드바 썸네일 생성에 사용) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onPdfDocLoaded?: (doc: any) => void;
 }
 
-export function PdfViewer({ file }: PdfViewerProps) {
+export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: PdfViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const pdfDocRef = useRef<PDFDocumentProxy | null>(null);
+  const setViewerState = usePdfFileStore((s) => s.setViewerState);
+  const setCurrentPageStore = usePdfFileStore((s) => s.setCurrentPage);
 
+  // 탭 전환 시 저장된 상태 복원 (마운트 시 1회만 읽음)
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (!fileId) return 1;
+    return usePdfFileStore.getState().viewerStates[fileId]?.currentPage ?? 1;
+  });
+  const [scale, setScale] = useState(() => {
+    if (!fileId) return 1.2;
+    return usePdfFileStore.getState().viewerStates[fileId]?.zoom ?? 1.2;
+  });
   const [numPages, setNumPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.2);
   const [loading, setLoading] = useState(false);
   const [internalFile, setInternalFile] = useState<File | null>(null);
 
@@ -49,7 +66,7 @@ export function PdfViewer({ file }: PdfViewerProps) {
     }
   }, []);
 
-  /* 파일 변경 시 PDF 로드 */
+  /* 파일 변경 시 PDF 로드 (scale은 deps에서 제외 — 줌 변경은 아래 effect에서 처리) */
   useEffect(() => {
     if (!activeFile) return;
 
@@ -72,8 +89,17 @@ export function PdfViewer({ file }: PdfViewerProps) {
         pdfDocRef.current = doc;
 
         setNumPages(doc.numPages);
-        setCurrentPage(1);
-        await renderPage(doc, 1, scale);
+
+        // 사이드바 썸네일 생성을 위해 pdfDoc 전달
+        onPdfDocLoaded?.(doc);
+
+        // 저장된 페이지 복원 (범위 초과 시 clamp)
+        const savedPage = fileId
+          ? (usePdfFileStore.getState().viewerStates[fileId]?.currentPage ?? 1)
+          : 1;
+        const validPage = Math.min(savedPage, doc.numPages);
+        setCurrentPage(validPage);
+        await renderPage(doc, validPage, scale);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -83,7 +109,9 @@ export function PdfViewer({ file }: PdfViewerProps) {
     return () => {
       cancelled = true;
     };
-  }, [activeFile, renderPage, scale]);
+    // scale 은 deps에서 의도적으로 제외 (파일 로드 시에만 실행)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile, renderPage]);
 
   /* 페이지/줌 변경 시 재렌더 */
   useEffect(() => {
@@ -91,6 +119,26 @@ export function PdfViewer({ file }: PdfViewerProps) {
       renderPage(pdfDocRef.current, currentPage, scale);
     }
   }, [currentPage, scale, renderPage]);
+
+  /* 사이드바 썸네일 클릭 → currentPageIndex prop 변경 시 뷰어 페이지 이동 (0-indexed → 1-indexed) */
+  useEffect(() => {
+    if (currentPageIndex === undefined || !pdfDocRef.current || numPages === 0) return;
+    const targetPage = currentPageIndex + 1;
+    if (targetPage !== currentPage && targetPage >= 1 && targetPage <= numPages) {
+      setCurrentPage(targetPage);
+    }
+    // currentPage는 deps에서 제외 — prop 변경 시에만 반응
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPageIndex, numPages]);
+
+  /* 상태 변경 시 스토어에 저장 */
+  useEffect(() => {
+    if (fileId) {
+      setViewerState(fileId, { currentPage, zoom: scale });
+    }
+    // 뷰어 페이지 변경 → 스토어 동기화 (사이드바 하이라이트 연동)
+    setCurrentPageStore(currentPage - 1);
+  }, [fileId, currentPage, scale, setViewerState, setCurrentPageStore]);
 
   const SCALES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
 

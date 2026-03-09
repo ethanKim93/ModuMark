@@ -2,16 +2,20 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { TauriFileOpenProvider } from "@/components/providers/TauriFileOpenProvider";
 import "./globals.css";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  /* CLS 방지: 웹폰트 로드 전 fallback 폰트 표시 */
+  display: "swap",
 });
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  themeColor: "#1773CF",
 };
 
 export const metadata: Metadata = {
@@ -22,7 +26,10 @@ export const metadata: Metadata = {
   },
   description:
     "브라우저에서 즉시 사용하는 무료 마크다운 WYSIWYG 편집기. PDF 병합·분할·변환까지. 파일은 외부 서버로 전송되지 않습니다.",
-  keywords: ["마크다운 편집기", "WYSIWYG", "PDF 병합", "PDF 분할", "무료"],
+  keywords: ["마크다운 편집기", "WYSIWYG", "PDF 병합", "PDF 분할", "PDF 변환", "무료", "로컬 처리", "보안"],
+  alternates: {
+    canonical: "https://modumark.app",
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
@@ -38,6 +45,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "ModuMark",
+  },
 };
 
 export default function RootLayout({
@@ -50,6 +63,8 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <ThemeProvider>
+          {/* Tauri 파일 연결 전역 라우팅 (.md→/markdown, .pdf→/pdf) */}
+          <TauriFileOpenProvider />
           {children}
         </ThemeProvider>
         {/* Google AdSense — lazyOnload: 페이지 로드 완료 후 로드 */}

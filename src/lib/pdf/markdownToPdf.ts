@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, PDFFont } from 'pdf-lib';
+import { PDFDocument, rgb, PDFFont } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 
 interface ConvertOptions {
@@ -14,6 +14,18 @@ async function loadFontBytes(path: string): Promise<ArrayBuffer> {
   if (!res.ok) throw new Error(`폰트 로드 실패: ${path}`);
   return res.arrayBuffer();
 }
+
+/* 인라인 마크다운 기호 제거 (PDF 출력 시 깔끔한 텍스트만 표시) */
+const stripInlineMarkdown = (text: string): string => {
+  return text
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')  // 이미지 → alt 텍스트
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // 링크 → 링크 텍스트
+    .replace(/~~(.*?)~~/g, '$1')               // 취소선
+    .replace(/\*\*(.+?)\*\*/g, '$1')           // 굵게
+    .replace(/\*(.+?)\*/g, '$1')               // 이탤릭
+    .replace(/_(.+?)_/g, '$1')                 // 이탤릭 (밑줄)
+    .replace(/`(.+?)`/g, '$1');                // 인라인 코드
+};
 
 /* 마크다운을 줄 단위로 파싱하여 PDF 생성 (클라이언트 사이드) */
 export async function markdownToPdf(markdown: string, options?: ConvertOptions): Promise<Uint8Array> {
@@ -35,8 +47,6 @@ export async function markdownToPdf(markdown: string, options?: ConvertOptions):
 
   const font = await pdfDoc.embedFont(cachedRegularFont);
   const boldFont = await pdfDoc.embedFont(cachedBoldFont);
-  /* 코드블록용 모노스페이스는 ASCII만 사용하므로 StandardFonts 유지 */
-  const monoFont = await pdfDoc.embedFont(StandardFonts.Courier);
 
   const PAGE_WIDTH = 595;
   const PAGE_HEIGHT = 842; // A4
@@ -117,11 +127,12 @@ export async function markdownToPdf(markdown: string, options?: ConvertOptions):
     });
 
     for (const cl of codeLines) {
-      const wrapped = wrapText(cl || ' ', 10, monoFont);
+      /* 코드블록도 NotoSansKR 사용 — 한글 깨짐 방지 (모노스페이스 스타일은 배경색으로 구분) */
+      const wrapped = wrapText(cl || ' ', 10, font);
       for (const wl of wrapped) {
         checkPage(14);
         try {
-          page.drawText(wl, { x: MARGIN + 4, y, size: 10, font: monoFont, color: rgb(0.2, 0.2, 0.2) });
+          page.drawText(wl, { x: MARGIN + 4, y, size: 10, font, color: rgb(0.2, 0.2, 0.2) });
         } catch {
           /* 코드블록 내 특수문자 렌더링 실패 시 스킵 */
         }
@@ -152,7 +163,7 @@ export async function markdownToPdf(markdown: string, options?: ConvertOptions):
     /* 헤딩 */
     if (rawLine.startsWith('# ')) {
       y -= 4;
-      drawText(rawLine.slice(2), 22, boldFont, rgb(0.05, 0.05, 0.05));
+      drawText(stripInlineMarkdown(rawLine.slice(2)), 22, boldFont, rgb(0.05, 0.05, 0.05));
       /* 헤딩 아래 구분선 */
       page.drawLine({ start: { x: MARGIN, y }, end: { x: MARGIN + MAX_WIDTH, y }, thickness: 0.5, color: rgb(0.8, 0.8, 0.8) });
       y -= 8;
@@ -160,25 +171,25 @@ export async function markdownToPdf(markdown: string, options?: ConvertOptions):
     }
     if (rawLine.startsWith('## ')) {
       y -= 2;
-      drawText(rawLine.slice(3), 18, boldFont);
+      drawText(stripInlineMarkdown(rawLine.slice(3)), 18, boldFont);
       y -= 4;
       continue;
     }
     if (rawLine.startsWith('### ')) {
-      drawText(rawLine.slice(4), 14, boldFont);
+      drawText(stripInlineMarkdown(rawLine.slice(4)), 14, boldFont);
       continue;
     }
 
     /* 인용구 */
     if (rawLine.startsWith('> ')) {
       page.drawLine({ start: { x: MARGIN, y }, end: { x: MARGIN, y: y - 14 }, thickness: 2, color: rgb(0.35, 0.55, 0.85) });
-      drawText(rawLine.slice(2), 11, font, rgb(0.45, 0.45, 0.45));
+      drawText(stripInlineMarkdown(rawLine.slice(2)), 11, font, rgb(0.45, 0.45, 0.45));
       continue;
     }
 
     /* 비순서 목록 */
     if (rawLine.startsWith('- ') || rawLine.startsWith('* ')) {
-      const content = rawLine.slice(2);
+      const content = stripInlineMarkdown(rawLine.slice(2));
       checkPage(14);
       page.drawText('•', { x: MARGIN + 4, y, size: 12, font: boldFont, color: rgb(0.1, 0.1, 0.1) });
       const wrapped = wrapText(content, 12, font);
@@ -208,9 +219,9 @@ export async function markdownToPdf(markdown: string, options?: ConvertOptions):
       continue;
     }
 
-    /* 굵게(**text**) 간단 처리 — 전체 볼드 적용 */
+    /* 굵게(**text**) 간단 처리 — 전체 볼드 적용 (isBold 판정은 원본 rawLine으로 유지) */
     const isBold = rawLine.includes('**') || rawLine.startsWith('####');
-    const cleanLine = rawLine.replace(/\*\*/g, '').replace(/^####\s*/, '');
+    const cleanLine = stripInlineMarkdown(rawLine.replace(/^####\s*/, ''));
     drawText(cleanLine, 12, isBold ? boldFont : font);
   }
 
