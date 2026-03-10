@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { TauriFileOpenProvider } from "@/components/providers/TauriFileOpenProvider";
+import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -70,6 +71,7 @@ export default function RootLayout({
           {/* Tauri 파일 연결 전역 라우팅 (.md→/markdown, .pdf→/pdf) */}
           <TauriFileOpenProvider />
           {children}
+          <CookieConsentBanner />
         </ThemeProvider>
         {/* Google AdSense — lazyOnload: 페이지 로드 완료 후 로드 */}
         <Script

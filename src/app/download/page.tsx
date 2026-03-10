@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Download, Monitor, Shield, Zap, HardDrive } from 'lucide-react';
+import { SiteHeader } from '@/components/layout/SiteHeader';
+import { SiteFooter } from '@/components/layout/SiteFooter';
 
 export const metadata: Metadata = {
   title: '데스크탑 앱 다운로드',
@@ -38,6 +40,7 @@ const features = [
 export default function DownloadPage() {
   return (
     <div className="min-h-screen bg-background">
+      <SiteHeader />
       <div className="max-w-3xl mx-auto px-6 py-16 space-y-12">
         {/* 헤더 */}
         <div className="text-center space-y-4">
@@ -84,6 +87,7 @@ export default function DownloadPage() {
           </Link>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 ---
 name: e2e-tester
 model: claude-opus-4-6
+color: yellow
 description: |
   E2E(End-to-End) 테스트 전문 서브에이전트. 다음 상황에서 사용한다:
   - Playwright로 웹/데스크탑 앱의 사용자 시나리오를 자동화 테스트할 때

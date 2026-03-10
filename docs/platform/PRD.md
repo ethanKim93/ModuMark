@@ -3,7 +3,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.3 |
+| 문서 버전 | v2.5 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/platform/BRD.md](./BRD.md) |
 | 상태 | Active (Phase 1 완료) |
@@ -61,7 +61,9 @@
 | `PdfSidebar.tsx` | PDF 도구 전용 사이드바 |
 | `ThemeToggle.tsx` | 다크/라이트/시스템 테마 전환 |
 | `ThemeProvider.tsx` | next-themes 기반 테마 프로바이더 |
-| `LandingHeader.tsx` | 랜딩 페이지 전용 헤더 (ThemeToggle 포함, 클라이언트 컴포넌트) |
+| `LandingHeader.tsx` | 랜딩 페이지 전용 헤더 (ThemeToggle 포함, 클라이언트 컴포넌트) — Phase 3에서 SiteHeader로 대체 예정 |
+| `SiteHeader.tsx` | 모든 공개 페이지 공통 헤더 — 로고·주요 네비게이션·ThemeToggle·모바일 햄버거 메뉴 (Phase 3 신규) |
+| `SiteFooter.tsx` | 모든 공개 페이지 공통 푸터 — 도구·법적·연락처 링크 (Phase 3 신규) |
 
 ### 1.3 Vercel (웹 배포)
 
@@ -80,11 +82,15 @@
 |---------|------|------|
 | PL-M1 | Next.js 웹 앱 배포 | Vercel 무료 티어에 Next.js 16.1.6 App Router 앱 배포 ✅ Phase 1 완료 |
 | PL-M2 | SEO 기본 구조 | 공개 페이지 SSR/SSG, 페이지별 고유 메타태그 |
-| PL-M3 | sitemap.xml | 자동 생성·제공. 모든 공개 페이지 포함 |
+| PL-M3 | sitemap.xml | 자동 생성·제공. 모든 공개 페이지 포함 (`/`, `/markdown`, `/pdf`, `/download`, `/security`, `/privacy`, `/terms`) |
 | PL-M4 | robots.txt | 검색 엔진 크롤링 허용 설정 |
 | PL-M5 | OG 태그 | Facebook/카카오 공유 시 미리보기 이미지·제목·설명 |
 | PL-M6 | 반응형 레이아웃 | 375px(모바일) ~ 1440px(데스크탑) 대응 |
 | PL-M7 | 공개 소개 페이지 | 서비스 소개, 기능 설명, 사용법 가이드 (AdSense 승인용 콘텐츠) |
+| PL-M14 | SiteHeader 통일 컴포넌트 | 모든 공개 페이지(/, /about, /privacy, /terms, /security, /download, /guide/*)에서 공유하는 단일 헤더 컴포넌트. 로고, 주요 페이지 네비게이션(마크다운 에디터·PDF 도구·가이드·About), ThemeToggle, 모바일 햄버거 메뉴 포함. PL-BR16/17 구현 |
+| PL-M15 | SiteFooter 통일 컴포넌트 | 모든 공개 페이지에서 공유하는 단일 푸터 컴포넌트. 도구 링크(마크다운 에디터·PDF 도구), 법적 링크(개인정보처리방침·이용약관·보안 정책), 연락처(modu.markdown@gmail.com, GitHub Issues) 포함. PL-BR18 구현 |
+| PL-M16 | sitemap.ts 확장 | `/about`, `/guide`, `/guide/markdown-basics`, `/guide/pdf-merge`, `/guide/pdf-split`, `/guide/ocr`, `/guide/keyboard-shortcuts`, `/pdf/merge`, `/pdf/split`, `/pdf/ocr` 경로 추가 |
+| PL-M17 | LandingHeader.tsx 제거 | SiteHeader로 대체 후 `LandingHeader.tsx` 파일 삭제. 미사용 컴포넌트 제거로 코드 정리 |
 
 ### Should Have
 
@@ -95,11 +101,14 @@
 | PL-S3 | .md/.pdf 파일 연결 | Windows에서 .md 파일 더블클릭 → `/markdown` 에디터 실행, .pdf 파일 더블클릭 → `/pdf` 뷰어 실행. 파일 타입별 자동 라우팅 |
 | PL-S9 | 파일 타입별 자동 라우팅 | 파일 연결로 열린 파일의 타입(.md → markdown, .pdf → pdf)에 따라 올바른 페이지로 자동 이동. `?openFile=` 쿼리 파라미터 활용 |
 | PL-S4 | 구조화 데이터 | SoftwareApplication Schema.org JSON-LD |
+| PL-S13 | 구조화 데이터 보강 | `structured-data.ts`에 FAQPage 스키마(자주 묻는 질문), Organization 스키마(서비스 운영자 정보) 추가. Google Rich Results Test 통과 기준 |
 | PL-S5 | 다크 모드 지원 | 시스템 설정 연동 + 수동 전환. **랜딩 페이지 포함 모든 페이지에서 테마 토글 제공** ✅ Phase 1 구현 완료 (next-themes, ThemeToggle.tsx), 랜딩 페이지 Phase 2A 보완 예정 |
 | PL-S6 | 보안 안내 페이지 | "파일이 서버에 전송되지 않습니다" 명시적 안내 |
 | PL-S7 | 세션 백업 인프라 (Tauri 앱 전용) | Tauri `app_data_dir()` API로 백업 디렉토리 접근. `{APP_DATA_DIR}/backup/` 경로에 `session.json` + `tab_{uuid}.md.bak` 파일 관리. Tauri FS 플러그인 사용. PROPOSAL-005 채택 |
 | PL-S8 | 앱 다운로드 안내 시스템 | 웹 환경 IndexedDB 50MB 소프트 한도 초과 시 표시하는 앱 다운로드 안내 UI. 다운로드 페이지(`/download`)로 연결하는 CTA 포함 다이얼로그. PROPOSAL-005 채택 |
-| PL-S10 | 랜딩 페이지 다운로드 CTA | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. 링크 대상: GitHub Releases 최신 릴리즈 URL. PL-BR12 구현 |
+| PL-S10 | 랜딩 페이지 다운로드 CTA | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. 링크 대상: `/download` 페이지 또는 GitHub Releases 최신 릴리즈 URL. PL-BR12 구현 |
+| PL-S11 | 앱 다운로드 페이지 (/download) | Windows .exe / .msi 구분 다운로드 버튼 제공. 버전 정보(버전명·릴리즈 날짜·파일 크기) 표시. 설치 단계별 안내. 향후 macOS/Linux 확장을 고려한 OS별 섹션 구조. PL-BR13 구현 |
+| PL-S12 | GitHub Releases URL 중앙 관리 | `src/lib/releases.ts` 파일에 최신 버전·다운로드 URL 상수 관리. 초기에는 하드코딩, GitHub API 자동 참조 구조로 확장 가능. PL-BR15 구현 |
 
 ### Could Have
 
@@ -123,7 +132,12 @@
 | US-PL-05 | 나는 앱을 설치할 때 바이러스 경고 없이 안전하게 설치하고 싶다 | 코드 서명된 .exe/.msi 설치 파일 제공. Windows SmartScreen 경고 없음 |
 | US-PL-06 | 나는 첫 방문 시(랜딩 페이지) 다크/라이트 모드를 전환하고 싶다 | 랜딩 페이지 우측 상단에 ThemeToggle 버튼 표시. 다크 → 라이트 → 시스템 순환 동작. 페이지 이동 후에도 설정 유지 |
 | US-PL-07 | 나는 Windows에서 .pdf 파일을 더블클릭하여 ModuMark PDF 뷰어로 열고 싶다 | 앱 설치 후 .pdf 파일을 더블클릭하면 ModuMark `/pdf` 뷰어 페이지에서 해당 파일이 자동으로 열림 |
-| US-PL-08 | 나는 랜딩 페이지에서 바로 Windows 앱을 다운로드하고 싶다 | 랜딩 Hero CTA 영역에 "Windows 앱 다운로드" 버튼 표시. LandingHeader 네비게이션에 "다운로드" 링크 표시. 클릭 시 GitHub Releases 최신 릴리즈 페이지로 이동 |
+| US-PL-08 | 나는 랜딩 페이지에서 바로 Windows 앱을 다운로드하고 싶다 | 랜딩 Hero CTA 영역에 "Windows 앱 다운로드" 버튼 표시. LandingHeader 네비게이션에 "다운로드" 링크 표시. 클릭 시 `/download` 페이지 또는 GitHub Releases 최신 릴리즈 페이지로 이동 |
+| US-PL-09 | 나는 /download 페이지에서 .exe와 .msi 중 원하는 설치 방식을 선택하여 다운로드하고 싶다 | /download 페이지에 .exe(일반 설치) / .msi(기업·배포 설치) 구분 버튼 제공. 각 버튼에 파일 크기 표시. 클릭 시 GitHub Releases 해당 파일로 직접 다운로드 |
+| US-PL-10 | 나는 /download 페이지에서 현재 최신 버전과 릴리즈 날짜를 확인하고 싶다 | 버전명(예: v1.0.0), 릴리즈 날짜, .exe/.msi 파일 크기가 페이지에 표시됨 |
+| US-PL-11 | 나는 설치 과정에서 막히면 페이지의 안내를 보고 해결하고 싶다 | /download 페이지에 단계별 설치 안내(SmartScreen 경고 처리 포함) 제공 |
+| US-PL-12 | 어떤 공개 페이지에서도 마크다운 에디터, PDF 도구, 가이드, About 페이지로 바로 접근할 수 있다 | 모든 공개 페이지(/, /about, /privacy, /terms, /security, /download, /guide/*)에서 SiteHeader 네비게이션을 통해 핵심 기능 페이지로 1클릭 이동 가능 |
+| US-PL-13 | 나는 모바일(375px)에서 햄버거 메뉴로 모든 네비게이션 항목에 접근할 수 있다 | 375px 뷰포트에서 SiteHeader 우측에 햄버거 아이콘 표시. 클릭 시 드롭다운 메뉴로 마크다운 에디터·PDF 도구·가이드·About 항목 전체 노출 |
 
 ---
 
@@ -183,6 +197,55 @@ export const metadata: Metadata = {
 | LCP | ≤ 2.5s | Next.js Image 컴포넌트, 폰트 최적화, 중요 CSS 인라인 |
 | FID/INP | ≤ 100ms | React Server Components로 클라이언트 JS 최소화, 코드 스플리팅 |
 | CLS | ≤ 0.1 | 이미지·광고 슬롯에 명시적 크기 지정, 폰트 폴백 최소화 |
+
+---
+
+## 4-2. /download 페이지 구현 상세
+
+### 4-2.1 페이지 구조
+
+```
+/download
+├── 헤더: 페이지 제목 + 최신 버전 정보 (버전명, 릴리즈 날짜)
+├── 다운로드 버튼 섹션 (OS별)
+│   ├── Windows
+│   │   ├── .exe 다운로드 버튼 (설치형, 파일 크기 표시)
+│   │   └── .msi 다운로드 버튼 (기업/배포용, 파일 크기 표시)
+│   └── macOS / Linux (향후 확장 — 현재는 "준비 중" 상태로 비활성화)
+├── 설치 안내 섹션
+│   ├── 1단계: 다운로드
+│   ├── 2단계: 설치 실행 (SmartScreen 경고 처리 안내 포함)
+│   └── 3단계: 파일 연결 등록 (.md / .pdf)
+└── 시스템 요구사항 (Windows 10 이상, 64-bit)
+```
+
+### 4-2.2 GitHub Releases URL 관리 전략
+
+| 전략 | 설명 | 적용 시점 |
+|------|------|----------|
+| 하드코딩 (초기) | `src/lib/releases.ts`에 버전·URL 상수 정의. 신규 릴리즈 시 수동 업데이트 | Phase 2 (초기 출시) |
+| GitHub API 자동 참조 (향후) | GitHub REST API로 최신 릴리즈 정보 동적 조회. SSG revalidate로 빌드 시 갱신 | Phase 4 이후 |
+
+```typescript
+// src/lib/releases.ts (예시 구조)
+export const LATEST_RELEASE = {
+  version: 'v1.0.0',
+  releaseDate: '2026-03-XX',
+  windows: {
+    exe: { url: 'https://github.com/.../.exe', size: '12MB' },
+    msi: { url: 'https://github.com/.../.msi', size: '13MB' },
+  },
+};
+```
+
+### 4-2.3 /download 페이지 메타데이터
+
+| 항목 | 값 |
+|------|------|
+| title | `Windows 앱 다운로드 - ModuMark` |
+| description | `ModuMark Windows 데스크탑 앱 무료 다운로드. 오프라인에서도 마크다운 편집과 PDF 처리 가능.` |
+| 타겟 키워드 | `마크다운 편집기 다운로드`, `무료 PDF 편집기 다운로드`, `typora 대안 다운로드` |
+| OG 이미지 | 앱 스크린샷 또는 다운로드 일러스트 |
 
 ---
 
@@ -262,3 +325,5 @@ GitHub Releases에 .exe/.msi 파일 업로드
 | v2.1 | 2026-03-09 | PL-S5 설명 보강: 랜딩 페이지 포함 전체 페이지 테마 토글. LandingHeader.tsx 추가. US-PL-06 추가: 랜딩 페이지 테마 전환 사용자 스토리 | 프로젝트 오너 |
 | v2.2 | 2026-03-09 | PL-S3 확장: `.md/.pdf 파일 연결` + 파일 타입별 라우팅. PL-S9 신규: 파일 타입별 자동 라우팅. US-PL-03 확장: `.md 또는 .pdf 파일`. US-PL-07 신규: .pdf 파일 → PDF 뷰어. Tauri 설명 `.md/.pdf 파일 연결`로 변경 | 프로젝트 오너 |
 | v2.3 | 2026-03-10 | PL-S10 신규: 랜딩 페이지 다운로드 CTA — Hero CTA 버튼 + LandingHeader 네비게이션 링크, GitHub Releases 연결. US-PL-08 신규: 랜딩 페이지 다운로드 버튼 사용자 스토리 | 프로젝트 오너 |
+| v2.4 | 2026-03-11 | PL-S11 신규: 앱 다운로드 페이지(/download) — OS별 구분(.exe/.msi), 버전 정보, 설치 안내, 향후 macOS/Linux 확장 구조. PL-S12 신규: GitHub Releases URL 중앙 관리(`releases.ts`). PL-M3 sitemap에 /download 경로 명시. US-PL-09~11 신규: /download 페이지 사용자 스토리. 4-2절 "/download 페이지 구현 상세" 신규 추가 | 프로젝트 오너 |
+| v2.5 | 2026-03-11 | PL-M14 신규: SiteHeader 통일 컴포넌트 (모든 공개 페이지 공통, PL-BR16/17). PL-M15 신규: SiteFooter 통일 컴포넌트 (모든 공개 페이지 공통, PL-BR18). PL-M16 신규: sitemap.ts 확장 (/about·/guide/*·/pdf/merge·/pdf/split·/pdf/ocr). PL-M17 신규: LandingHeader.tsx 제거. PL-S13 신규: 구조화 데이터 보강 (FAQPage·Organization 스키마). US-PL-12~13 신규: SiteHeader 네비게이션 사용자 스토리. 레이아웃 컴포넌트 목록에 SiteHeader.tsx·SiteFooter.tsx 추가 | 프로젝트 오너 |

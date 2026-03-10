@@ -3,7 +3,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v3.1 |
+| 문서 버전 | v3.3 |
 | 작성일 | 2026-03-10 |
 | 상위 문서 | [docs/README.md](../README.md) · [docs/platform/PRD.md](./PRD.md) |
 | 상태 | Active (Phase 1 완료) |
@@ -37,7 +37,7 @@
 | 테스트 유형 | 범위 | 성공 기준 |
 |-----------|------|----------|
 | **단위 테스트** | Metadata 생성 함수: 각 페이지별 title/description 값 정확성 | 각 페이지 메타데이터가 BRD 정의 값과 일치 |
-| **단위 테스트** | sitemap.xml 생성: 모든 공개 페이지 URL 포함 여부 | sitemap에 /, /editor, /pdf, /download 등 모든 공개 경로 포함 |
+| **단위 테스트** | sitemap.xml 생성: 모든 공개 페이지 URL 포함 여부 | sitemap에 `/`, `/markdown`, `/pdf`, `/download`, `/security`, `/privacy`, `/terms` 모든 공개 경로 포함 |
 | **통합 테스트** | SSR 렌더링: 각 페이지가 검색 엔진이 읽을 수 있는 완전한 HTML로 렌더링 | curl로 페이지 요청 시 완전한 HTML 반환 (JS 없이 콘텐츠 포함) |
 | **E2E 테스트** | 반응형 레이아웃: 375px, 768px, 1280px 화면에서 레이아웃 깨짐 없음 | Playwright viewport 테스트 통과 |
 | **E2E 테스트** | Lighthouse SEO 점수: 소개 페이지 Lighthouse SEO 90점 이상 | Lighthouse CI 자동화 |
@@ -56,37 +56,95 @@
 | Lighthouse SEO 90점 이상 달성 | P0 | Core Web Vitals 최적화 |
 | **랜딩 페이지 테마 토글 UI 추가** | P0 | `LandingHeader.tsx` 분리 — ThemeToggle 포함. `page.tsx` 인라인 header → LandingHeader 교체. PL-BR10·US-PL-06 구현 |
 | 다운로드 페이지 (/download) | P1 | Windows 앱 출시 후 다운로드 링크 제공 |
-| **랜딩 Hero CTA 다운로드 버튼** | P1 | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). GitHub Releases 최신 릴리즈로 연결. PL-BR12 구현 |
-| **LandingHeader 다운로드 링크** | P1 | `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. GitHub Releases 최신 릴리즈로 연결. PL-BR12 구현 |
-| AdSense 심사 신청 | P1 | 트래픽·콘텐츠 충분 시 신청 |
+| **랜딩 Hero CTA 다운로드 버튼** | P1 | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). `/download` 페이지로 연결. PL-BR12 구현 |
+| **LandingHeader 다운로드 링크** | P1 | `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. `/download` 페이지로 연결. PL-BR12 구현 |
+| **GitHub Releases URL 중앙 관리** | P1 | `src/lib/releases.ts` 파일에 버전·URL 상수 정의. 하드코딩 초기 구현. PL-BR15 구현 |
+| **앱 다운로드 페이지 (/download)** | P1 | Windows .exe/.msi 구분 버튼, 버전 정보(버전명·릴리즈 날짜·파일 크기), 설치 안내, 향후 macOS/Linux 확장 가능 구조. SSR 페이지로 SEO 크롤링 가능. PL-BR13 구현 |
+| **sitemap.xml에 /download 추가** | P1 | `app/sitemap.ts`에 `/download` 경로 포함. PL-BR14 구현 |
+| **앱 다운로드 안내 다이얼로그** | P2 | 웹 환경 IndexedDB 50MB 소프트 한도 초과 시 앱 다운로드 안내 다이얼로그 표시. `/download` 페이지 CTA 포함. PL-S8 구현 |
+| AdSense 심사 신청 | P2 | 트래픽·콘텐츠 충분 시 신청 |
+
+### Phase 2 태스크 정의 (shrimp-task-manager용)
+
+| 태스크 ID | 태스크명 | PRD 근거 | 의존성 | 완료 기준 |
+|----------|---------|---------|-------|----------|
+| P2-1 | Lighthouse SEO 90점 이상 달성 | PL-M2 | Phase 1 완료 | Lighthouse SEO 점수 90점 이상 확인 |
+| P2-2 | 랜딩 페이지 LandingHeader 테마 토글 UI | PL-S5 | Phase 1 완료 | LandingHeader.tsx 분리·ThemeToggle 포함. 랜딩 페이지에서 테마 전환 정상 동작 |
+| P2-3 | GitHub Releases URL 중앙 관리 (`releases.ts`) | PL-S12 | Phase 1 완료 | `src/lib/releases.ts` 생성. 버전·URL 상수 정의. 빌드 성공 |
+| P2-4 | 앱 다운로드 페이지 (/download) | PL-S11 | P2-3 | /download 페이지 렌더링 확인. .exe/.msi 구분 버튼 노출. 버전 정보·파일 크기 표시. 설치 안내 포함. SSR 렌더링 확인 |
+| P2-5 | sitemap.xml에 /download 추가 | PL-M3 | P2-4 | `app/sitemap.ts`에 /download 경로 포함. sitemap.xml 응답에서 /download URL 확인 |
+| P2-6 | LandingHeader 다운로드 링크 추가 | PL-S10 | P2-2, P2-3 | LandingHeader 네비게이션에 "다운로드" 링크 표시. 클릭 시 /download 페이지로 이동 |
+| P2-7 | 랜딩 Hero CTA 다운로드 버튼 | PL-S10 | P2-3 | Hero CTA 영역에 `Download` 아이콘 + "Windows 앱 다운로드" 버튼 표시. 클릭 시 /download 페이지로 이동 |
+| P2-8 | 앱 다운로드 안내 다이얼로그 (웹) | PL-S8 | P2-4 | IndexedDB 50MB 한도 초과 시 다이얼로그 노출. /download CTA 링크 동작 확인 |
+| P2-9 | AdSense 심사 신청 | — | P2-1 | AdSense 심사 신청 완료 |
 
 ---
 
-## Phase 3: Tauri 데스크탑 앱 (목표: Phase 2 완료 후)
+## Phase 3: 공개 페이지 네비게이션 통일 + SEO 기반 강화
+
+**목표**: AdSense 승인 통과를 위한 네비게이션 일관성 확보 및 SEO 구조 강화. 모든 공개 페이지에서 동일한 SiteHeader/SiteFooter 컴포넌트를 사용하여 탐색 일관성을 보장하고, sitemap 및 구조화 데이터를 확장하여 검색 엔진 인덱싱을 최적화한다.
+
+### 기능 범위
+
+| 기능 | 우선순위 | 설명 |
+|------|---------|------|
+| SiteHeader 컴포넌트 생성 | P0 | 모든 공개 페이지 공통 헤더. 로고·주요 네비·ThemeToggle·모바일 햄버거 메뉴. PL-BR16/17 구현 |
+| SiteFooter 컴포넌트 생성 | P0 | 모든 공개 페이지 공통 푸터. 도구·법적·연락처 링크. PL-BR18 구현 |
+| 공개 페이지 SiteHeader 교체 | P0 | /, /about, /privacy, /terms, /security, /download, /guide/* 전체 적용 |
+| 공개 페이지 SiteFooter 교체 | P0 | 동일 페이지 인라인 footer → SiteFooter 교체 |
+| LandingHeader.tsx 제거 | P0 | SiteHeader 교체 완료 후 미사용 컴포넌트 삭제 |
+| sitemap.ts 확장 | P1 | /about, /guide/*, /pdf/merge, /pdf/split, /pdf/ocr 경로 추가 |
+| 구조화 데이터 보강 | P2 | FAQPage, Organization 스키마 추가. Google Rich Results Test 통과 |
+
+### Phase 3 태스크 정의 (shrimp-task-manager용)
+
+| 태스크 ID | 태스크명 | PRD 근거 | 의존성 | 완료 기준 |
+|----------|---------|---------|-------|----------|
+| P3-1 | SiteHeader 컴포넌트 생성 | PL-M14 | - | `src/components/layout/SiteHeader.tsx` 생성. 로고+네비(마크다운/PDF/가이드/About)+ThemeToggle+모바일 햄버거 동작 확인 |
+| P3-2 | SiteFooter 컴포넌트 생성 | PL-M15 | - | `src/components/layout/SiteFooter.tsx` 생성. 도구·법적·연락처 링크 포함 확인 |
+| P3-3 | 공개 페이지 SiteHeader 교체 | PL-M14 | P3-1 | /, /about, /privacy, /terms, /security, /download, /guide/* 모든 공개 페이지에서 SiteHeader 렌더링 확인 |
+| P3-4 | 공개 페이지 SiteFooter 교체 | PL-M15 | P3-2 | 동일 페이지에서 SiteFooter 렌더링 확인. 인라인 footer 제거 |
+| P3-5 | LandingHeader.tsx 제거 | PL-M17 | P3-3 | `LandingHeader.tsx` 파일 삭제. 빌드 성공 (`npm run build` 오류 없음) |
+| P3-6 | sitemap.ts 확장 | PL-M16 | - | /about, /guide, /guide/markdown-basics, /guide/pdf-merge, /guide/pdf-split, /guide/ocr, /guide/keyboard-shortcuts, /pdf/merge, /pdf/split, /pdf/ocr 경로 포함 확인 |
+| P3-7 | 구조화 데이터 보강 | PL-S13 | - | `structured-data.ts`에 FAQPage, Organization 스키마 추가. Google Rich Results Test 통과 |
+
+### 테스트 기준 (Phase 3)
+
+| 테스트 유형 | 범위 | 성공 기준 |
+|-----------|------|----------|
+| **빌드 테스트** | `npm run build` | 빌드 성공 (TypeScript 오류 없음, LandingHeader 참조 제거 완료) |
+| **E2E 테스트** | 모든 공개 페이지 SiteHeader/SiteFooter 표시 | Playwright로 /, /about, /privacy, /terms, /security, /download 각 페이지에서 SiteHeader·SiteFooter DOM 요소 존재 확인 |
+| **E2E 테스트** | 모바일 375px 햄버거 메뉴 동작 | 375px 뷰포트에서 햄버거 아이콘 표시 → 클릭 시 네비게이션 항목 전체 노출 확인 |
+| **통합 테스트** | sitemap.xml 새 URL 포함 | sitemap.xml 응답에서 /about, /guide/*, /pdf/merge, /pdf/split, /pdf/ocr URL 포함 확인 |
+| **Lighthouse** | SEO 점수 | 모든 공개 페이지 Lighthouse SEO 90점 이상 유지 |
+
+---
+
+## Phase 4: Tauri 데스크탑 앱 (목표: Phase 3 완료 후)
 
 **목표**: Windows 데스크탑 앱을 출시하여 Typora 대안으로서의 네이티브 경험을 제공한다.
 
 ### 전제 조건
 
-- **P3-0**: Tauri 2.0 + Next.js 16.1.6 통합 PoC 완료 (Phase 3 첫 태스크)
+- **P4-0**: Tauri 2.0 + Next.js 16.1.6 통합 PoC 완료 (Phase 4 첫 태스크)
 - PoC 실패 시 Electron으로 대안 진행
 
 ### 기능 범위
 
 | 기능 ID | 기능 | 우선순위 | 설명 |
 |---------|------|---------|------|
-| P3-0 | Tauri + Next.js 16 PoC | P0 | Tauri 2.0 + Next.js 16.1.6 통합 가능성 검증 (신규) |
-| P3-1 | Tauri 2.0 앱 빌드 | P0 | Windows .exe/.msi 빌드 |
-| P3-2 | 코드 서명 (Code Signing) | P0 | SmartScreen 경고 방지 |
-| P3-3 | .md/.pdf 파일 연결 등록 | P0 | Windows 파일 기본 앱으로 ModuMark 등록 (.md + .pdf 모두) |
-| P3-8 | 파일 타입별 자동 라우팅 | P0 | 파일 연결로 열린 파일이 타입에 따라 올바른 페이지로 자동 이동 (.md → `/markdown`, .pdf → `/pdf`) |
-| P3-4 | 로컬 파일 시스템 접근 | P0 | Tauri FS 플러그인으로 파일 읽기·쓰기 |
-| P3-5 | GitHub Releases 배포 | P0 | 빌드 파일 GitHub Releases에 업로드 |
-| P3-6 | 창 상태 저장·복원 | P1 | 크기·위치 저장 |
-| P3-7 | **세션 백업 인프라 (Tauri)** | P1 | `app_data_dir()` API로 `{APP_DATA_DIR}/backup/` 디렉토리 관리. session.json + tab_{uuid}.md.bak 파일 읽기·쓰기·삭제. PL-S7 구현 |
-| — | **앱 다운로드 안내 시스템** | P2 | 웹 환경 스토리지 한도 초과 시 앱 다운로드 안내 다이얼로그 + `/download` 페이지 CTA. PL-S8 구현 |
+| P4-0 | Tauri + Next.js 16 PoC | P0 | Tauri 2.0 + Next.js 16.1.6 통합 가능성 검증 (신규) |
+| P4-1 | Tauri 2.0 앱 빌드 | P0 | Windows .exe/.msi 빌드 |
+| P4-2 | 코드 서명 (Code Signing) | P0 | SmartScreen 경고 방지 |
+| P4-3 | .md/.pdf 파일 연결 등록 | P0 | Windows 파일 기본 앱으로 ModuMark 등록 (.md + .pdf 모두) |
+| P4-8 | 파일 타입별 자동 라우팅 | P0 | 파일 연결로 열린 파일이 타입에 따라 올바른 페이지로 자동 이동 (.md → `/markdown`, .pdf → `/pdf`) |
+| P4-4 | 로컬 파일 시스템 접근 | P0 | Tauri FS 플러그인으로 파일 읽기·쓰기 |
+| P4-5 | GitHub Releases 배포 | P0 | 빌드 파일 GitHub Releases에 업로드 |
+| P4-6 | 창 상태 저장·복원 | P1 | 크기·위치 저장 |
+| P4-7 | **세션 백업 인프라 (Tauri)** | P1 | `app_data_dir()` API로 `{APP_DATA_DIR}/backup/` 디렉토리 관리. session.json + tab_{uuid}.md.bak 파일 읽기·쓰기·삭제. PL-S7 구현 |
+| P4-9 | **앱 다운로드 안내 다이얼로그 (Tauri 연동)** | P2 | P4-4 | 웹 환경 스토리지 한도 초과 → 다이얼로그의 `/download` CTA 링크가 Tauri 환경에서도 올바르게 동작 확인 |
 
-### 테스트 기준 (Phase 3)
+### 테스트 기준 (Phase 4)
 
 | 테스트 유형 | 범위 | 성공 기준 |
 |-----------|------|----------|
@@ -98,24 +156,25 @@
 | **E2E 테스트** | 광고 미노출: 데스크탑 앱에서 광고 슬롯 DOM 없음 | `adsbygoogle` 관련 DOM 요소 없음 확인 |
 | **통합 테스트** | 세션 백업 인프라: Tauri FS API로 backup 디렉토리 생성·파일 쓰기·읽기·삭제 정상 동작 | backup 디렉토리가 없을 시 자동 생성, 파일 CRUD 정상 확인 |
 | **단위 테스트** | 앱 데이터 디렉토리 경로: `app_data_dir()`이 올바른 Windows 경로 반환 | `%APPDATA%/com.modumark/backup/` 경로 확인 |
+| **E2E 테스트** | /download 페이지: .exe/.msi 다운로드 버튼 노출 및 링크 정합성 확인 | 버튼 클릭 시 GitHub Releases 올바른 URL로 이동 |
 
-### Phase 3 태스크 정의 (shrimp-task-manager용)
+### Phase 4 태스크 정의 (shrimp-task-manager용)
 
 | 태스크 ID | 태스크명 | PRD 근거 | 의존성 | 테스트 기준 |
 |----------|---------|---------|-------|------------|
-| P3-0 | Tauri + Next.js 16 PoC | PL-S6 | Phase 2 완료 | Tauri 2.0 + Next.js 16 통합 빌드 성공 확인 |
-| P3-1 | Tauri 2.0 앱 빌드 | PL-S6 | P3-0 | Windows .exe/.msi 빌드 성공 |
-| P3-2 | 코드 서명 | PL-S6 | P3-1 | SmartScreen 경고 없음 확인 |
-| P3-3 | .md/.pdf 파일 연결 등록 | PL-S6 | P3-1 | .md/.pdf 더블클릭 → 앱 실행 + 올바른 페이지 열림 확인 |
-| P3-8 | 파일 타입별 자동 라우팅 | PL-S6 | P3-3 | .md → /markdown, .pdf → /pdf 자동 라우팅 확인 |
-| P3-4 | 로컬 파일 시스템 접근 | PL-S7 | P3-1 | Tauri FS API 파일 읽기·쓰기 정상 동작 |
-| P3-5 | GitHub Releases 배포 | PL-S6 | P3-2 | GitHub Releases에 .msi/.exe 업로드 확인 |
-| P3-6 | 창 상태 저장·복원 | PL-S6 | P3-1 | 앱 재시작 후 창 크기·위치 복원 확인 |
-| P3-7 | 세션 백업 인프라 (Tauri) | PL-S7 | P3-4 | backup 디렉토리 생성·파일 CRUD 정상 확인 |
+| P4-0 | Tauri + Next.js 16 PoC | PL-S1 | Phase 3 완료 | Tauri 2.0 + Next.js 16 통합 빌드 성공 확인 |
+| P4-1 | Tauri 2.0 앱 빌드 | PL-S1 | P4-0 | Windows .exe/.msi 빌드 성공 |
+| P4-2 | 코드 서명 | PL-S2 | P4-1 | SmartScreen 경고 없음 확인 |
+| P4-3 | .md/.pdf 파일 연결 등록 | PL-S3 | P4-1 | .md/.pdf 더블클릭 → 앱 실행 + 올바른 페이지 열림 확인 |
+| P4-8 | 파일 타입별 자동 라우팅 | PL-S9 | P4-3 | .md → /markdown, .pdf → /pdf 자동 라우팅 확인 |
+| P4-4 | 로컬 파일 시스템 접근 | PL-S7 | P4-1 | Tauri FS API 파일 읽기·쓰기 정상 동작 |
+| P4-5 | GitHub Releases 배포 | PL-S12 | P4-2 | GitHub Releases에 .msi/.exe 업로드 확인 |
+| P4-6 | 창 상태 저장·복원 | PL-C2 | P4-1 | 앱 재시작 후 창 크기·위치 복원 확인 |
+| P4-7 | 세션 백업 인프라 (Tauri) | PL-S7 | P4-4 | backup 디렉토리 생성·파일 CRUD 정상 확인 |
 
 ---
 
-## Phase 4: 자동 업데이터 + 강화 (향후)
+## Phase 5: 자동 업데이터 + 강화 (향후)
 
 **목표**: 앱 생태계 안정성 강화 및 장기 운영 기반 마련.
 
@@ -147,3 +206,5 @@
 | v2.2 | 2026-03-09 | Phase 2B P2-3 확장: `.md/.pdf 파일 연결 등록`. P2-8 신규: 파일 타입별 자동 라우팅. 테스트 기준에 `.pdf 파일 연결 → PDF 뷰어 열기` 통합 테스트 추가 | 프로젝트 오너 |
 | v3.0 | 2026-03-10 | Phase 번호 체계 변경: 서브 Phase(A/B) → 순차 번호. Phase 2A→2, 2B→3, 3→4로 재매핑. P2-x ID를 P3-x로 변경. Phase 3 태스크 정의 블록 추가. 의존성 참조 업데이트 | 프로젝트 오너 |
 | v3.1 | 2026-03-10 | Phase 2에 "랜딩 Hero CTA 다운로드 버튼", "LandingHeader 다운로드 링크" 태스크 추가 (PL-BR12, PL-S10 구현). GitHub Releases 연결 명세 포함 | 프로젝트 오너 |
+| v3.2 | 2026-03-11 | Phase 2 기능 범위 보강: GitHub Releases URL 중앙 관리(P2-3), /download 페이지(P2-4), sitemap /download 추가(P2-5), 앱 다운로드 안내 다이얼로그(P2-8). Phase 2 태스크 정의 블록(P2-1~P2-9) 신규 추가. Phase 3에 P3-9(다이얼로그 Tauri 연동) 추가. sitemap 테스트 기준에 /download 경로 명시. Hero CTA·LandingHeader 링크 대상 /download 페이지로 변경 | 프로젝트 오너 |
+| v3.3 | 2026-03-11 | Phase 3 신규 추가 (공개 페이지 네비게이션 통일 + SEO 기반 강화) — P3-1~P3-7 태스크 정의 (PL-M14~17, PL-S13). 기존 Phase 3(Tauri) → Phase 4로 번호 재매핑. 기존 Phase 4(자동 업데이터) → Phase 5로 번호 재매핑. Phase 4 태스크 ID P3-* → P4-*로 변경 | 프로젝트 오너 |

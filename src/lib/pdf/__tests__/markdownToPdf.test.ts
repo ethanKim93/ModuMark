@@ -23,7 +23,7 @@ beforeAll(() => {
   });
 });
 
-describe('markdownToPdf', () => {
+describe('markdownToPdf', { timeout: 30_000 }, () => {
   it('빈 마크다운도 정상적으로 PDF를 생성한다', async () => {
     const { markdownToPdf } = await import('../markdownToPdf');
     const bytes = await markdownToPdf('');

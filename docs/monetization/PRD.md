@@ -3,10 +3,11 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.1 |
+| 문서 버전 | v3.0 |
 | 작성일 | 2026-03-07 |
+| 최종 수정 | 2026-03-11 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/monetization/BRD.md](./BRD.md) |
-| 상태 | Active (Phase 1 완료, AdSense 승인 완료 - 실제 ID 적용) |
+| 상태 | Active (Phase 1 완료, AdSense 승인 완료, Phase 3 AdSense 콘텐츠 강화 계획) |
 
 ---
 
@@ -34,6 +35,19 @@
 | MN-M4 | CLS 방지 | 광고 슬롯에 명시적 min-height 설정으로 레이아웃 이동 방지 ✅ Phase 1 완료 |
 | MN-M5 | 웹 전용 노출 | `isTauriApp()` 확인 후 광고 컴포넌트 렌더링. Tauri 앱에서 미노출 ✅ Phase 1 완료 |
 | MN-M6 | 광고 정책 설정 | AdSense 정책 센터에서 성인·도박 등 부적절 카테고리 차단 |
+| MN-M7 | SiteHeader 통일 컴포넌트 | `src/components/layout/SiteHeader.tsx` — 로고, 주요 페이지 네비게이션(홈·마크다운·PDF·About), ThemeToggle, 모바일 햄버거 메뉴 포함. 모든 공개 페이지에 적용 |
+| MN-M8 | SiteFooter 통일 컴포넌트 | `src/components/layout/SiteFooter.tsx` — 도구 링크(마크다운·PDF 병합·PDF 분할·OCR), 법적 링크(개인정보처리방침·이용약관·보안정책), 연락처(`modu.markdown@gmail.com`) 포함 |
+| MN-M9 | ToolHero SSR 컴포넌트 | `src/components/common/ToolHero.tsx` — 도구 페이지에 크롤러가 읽을 수 있는 도구 설명 텍스트를 SSR로 제공하는 컴포넌트. title, description, features(배열), usageSteps(배열) props를 받아 렌더링 |
+| MN-M10 | CookieConsentBanner | `src/components/common/CookieConsentBanner.tsx` — GDPR 준수 쿠키 동의 배너. 동의/거부 버튼, localStorage에 `cookie-consent` 키로 저장, 동의한 경우 재표시 없음 |
+| MN-M11 | About 페이지 | `src/app/about/page.tsx` — 1000자 이상 서비스 소개, ModuMark 제작 목적, 핵심 기능 소개, 개인정보 보호 철학, 연락처(`modu.markdown@gmail.com`) 포함 |
+| MN-M12 | /markdown 페이지 ToolHero 삽입 | 마크다운 에디터 페이지에 ToolHero 컴포넌트 삽입. 에디터 컴포넌트 아래 배치. SSR로 800자 이상 고유 텍스트 제공 |
+| MN-M13 | /pdf 페이지 ToolHero 삽입 | PDF 통합 도구 페이지에 ToolHero 컴포넌트 삽입. SSR로 800자 이상 고유 텍스트 제공 |
+| MN-M14 | PDF 하위 라우트 SSR 복원 | `/pdf/merge`, `/pdf/split`, `/pdf/ocr` — 각 페이지에서 redirect 제거, 고유 SSR 콘텐츠(각 페이지별 기능 설명 800자 이상) 포함. 각 페이지는 독립적인 URL과 메타데이터를 보유 |
+| MN-M15 | 개인정보처리방침 GDPR 보강 | `/privacy` 페이지에 GDPR 준수 조항 추가: 쿠키 종류별 설명(필수/분석/광고), 사용자 권리(열람·삭제·이의제기), AdSense 쿠키 옵트아웃 방법, 연락처 이메일 명시 |
+| MN-M16 | 공개 페이지 광고 슬롯 배치 | 랜딩 페이지(`/`) 2개, About 페이지(`/about`) 2개, 법적 페이지(`/privacy`, `/terms`, `/security`) 각 1개 AdSlot 추가 |
+| MN-M17 | sitemap.ts 업데이트 | `/about`, `/guide`, `/guide/markdown-basics`, `/guide/pdf-merge`, `/guide/pdf-split`, `/guide/ocr`, `/guide/keyboard-shortcuts`, `/pdf/merge`, `/pdf/split`, `/pdf/ocr` URL 추가 |
+| MN-M18 | 구조화 데이터 보강 | 랜딩 페이지에 FAQPage 스키마(Schema.org) 추가, About 페이지에 Organization 스키마 추가 (`src/lib/structured-data.ts` 확장) |
+| MN-M19 | 랜딩 페이지 콘텐츠 보강 | `src/app/page.tsx` — 사용 방법 3단계 섹션, FAQ 5-7개 섹션 추가. 전체 페이지 SSR 텍스트 1500자 이상 확보 |
 
 ### Should Have
 
@@ -43,12 +57,18 @@
 | MN-S2 | Ad Blocker 안내 | 감지 시 비폭력적 안내 배너 표시 (기능 차단 없음) |
 | MN-S3 | 모바일 광고 숨김 | 375px 미만 화면에서 광고 슬롯 자동 숨김 |
 | MN-S4 | 광고 실패 처리 | 광고 로딩 실패 시 슬롯 공간 제거, 레이아웃 복구 |
+| MN-S5 | 가이드 인덱스 페이지 | `src/app/guide/page.tsx` — 전체 가이드 목록 페이지. 각 가이드 링크, 가이드별 요약, 난이도 표시 |
+| MN-S6 | 마크다운 기초 가이드 | `src/app/guide/markdown-basics/page.tsx` — 마크다운 문법 기초(헤딩·볼드·이탤릭·링크·이미지·코드블록·테이블 등) 1000자 이상 |
+| MN-S7 | PDF 병합 가이드 | `src/app/guide/pdf-merge/page.tsx` — PDF 파일 병합 방법 단계별 설명 1000자 이상 |
+| MN-S8 | PDF 분할 가이드 | `src/app/guide/pdf-split/page.tsx` — PDF 페이지 범위 지정 분할 방법 1000자 이상 |
+| MN-S9 | OCR 가이드 | `src/app/guide/ocr/page.tsx` — PDF 텍스트 추출(OCR) 방법 및 활용 1000자 이상 |
+| MN-S10 | 키보드 단축키 가이드 | `src/app/guide/keyboard-shortcuts/page.tsx` — 에디터·PDF 도구 전체 단축키 목록 1000자 이상 |
 
 ### Could Have
 
 | 기능 ID | 기능 | 설명 |
 |---------|------|------|
-| MN-C1 | 광고 배치 A/B 테스트 | Phase 2: 위치별 CTR 비교 |
+| MN-C1 | 광고 배치 A/B 테스트 | Phase 2B: 위치별 CTR 비교 |
 | MN-C2 | 수익 대시보드 연동 | AdSense API로 수익 현황 확인 (내부용) |
 
 ---
@@ -105,6 +125,9 @@ export function AdSlot({ adUnitId, position, className }: AdSlotProps) {
 | US-MN-02 | 나는 모바일에서 편집할 때 좁은 화면을 광고로 낭비하지 않길 원한다 | 375px 미만 화면에서 광고 슬롯 숨김 |
 | US-MN-03 | 나는 광고 차단기를 쓰더라도 기능이 차단되지 않길 원한다 | 광고 차단기 감지 시 기능 차단 없이 안내 배너만 표시 |
 | US-MN-04 (프로젝트 오너) | 나는 AdSense 광고로 월 $200 이상 수익을 안정적으로 창출하고 싶다 | 출시 6개월 후 AdSense 대시보드에서 월 $200 이상 확인 |
+| US-MN-05 | 나는 처음 방문한 사용자로서 ModuMark가 어떤 서비스인지 빠르게 파악하고 싶다 | 랜딩 페이지에서 서비스 설명, 사용 방법 3단계, FAQ를 스크롤 없이 또는 한 번의 스크롤로 확인 가능 |
+| US-MN-06 | 나는 마크다운 문법을 처음 접하는 사용자로서 기초 문법을 참고하고 싶다 | /guide/markdown-basics 페이지에서 헤딩·볼드·링크·코드블록 등 기초 문법 예시를 확인 가능 |
+| US-MN-07 | 나는 EU 사용자로서 내 쿠키 동의 여부를 선택하고 싶다 | 최초 방문 시 쿠키 동의 배너 표시, 동의/거부 선택 후 재표시 없음 |
 
 ---
 
@@ -159,14 +182,24 @@ async function detectAdBlocker(): Promise<boolean> {
 | 요구사항 | 내용 |
 |---------|------|
 | AdSense 콘텐츠 정책 | 광고 클릭 유도 금지, 광고와 콘텐츠 명확히 구분 |
-| 개인정보처리방침 | Google AdSense 사용 사실 및 쿠키 사용 명시 |
+| 개인정보처리방침 | Google AdSense 사용 사실 및 쿠키 사용 명시. GDPR 옵트아웃 조항 포함 |
 | 광고 갱신 빈도 | 분당 최대 2회 (AdSense 정책 준수) |
+| GDPR 쿠키 동의 | 최초 방문 시 쿠키 동의 배너 표시, 동의 여부 localStorage 저장 |
+
+### 5.4 SEO 및 콘텐츠 품질
+
+| 요구사항 | 목표 |
+|---------|------|
+| Lighthouse SEO 점수 | 모든 공개 페이지 90점 이상 |
+| 공개 페이지 SSR 콘텐츠 | 각 페이지 800자 이상 고유 텍스트 (JS 미실행 상태에서 크롤러 접근 가능) |
+| 가이드 페이지 콘텐츠 | 각 가이드 페이지 1000자 이상 고유 텍스트 |
+| 구조화 데이터 | 랜딩(FAQPage), About(Organization) 스키마 적용 |
 
 ---
 
 ## 6. AdSense 승인 체크리스트
 
-AdSense 승인을 위한 사전 요건:
+AdSense 광고 게재 유지를 위한 품질 요건:
 
 | 항목 | 요건 | 상태 |
 |------|------|------|
@@ -180,6 +213,11 @@ AdSense 승인을 위한 사전 요건:
 | ads.txt | `/ads.txt` 파일로 퍼블리셔 인증 | ✅ 완료 (`public/ads.txt`) |
 | 메타 태그 인증 | `google-adsense-account` 메타 태그 | ✅ 완료 (`layout.tsx` metadata.other) |
 | **승인 결과** | **Google AdSense 최종 승인** | **✅ 승인 완료 (ID: `ca-pub-1815575117157423`)** |
+| 공개 페이지 SSR 콘텐츠 충분성 | 각 공개 페이지 800자 이상 SSR 텍스트 | 미완료 (Phase 3B) |
+| 네비게이션 일관성 | 모든 공개 페이지에서 주요 페이지 접근 가능 | 미완료 (Phase 3A) |
+| About/연락처 페이지 존재 | `/about` 페이지에 서비스 소개 + 연락처 | 미완료 (Phase 3B) |
+| 쿠키 동의 배너 (GDPR) | CookieConsentBanner 표시, localStorage 동의 저장 | 미완료 (Phase 3A) |
+| 가이드 콘텐츠 허브 | /guide 인덱스 + 가이드 5개 이상 | 미완료 (Phase 3C) |
 
 ---
 
@@ -190,3 +228,4 @@ AdSense 승인을 위한 사전 요건:
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v2.0 | 2026-03-08 | Phase 1 완료 반영: MN-M1~M5 완료 표시, FloatingAdSlot 컴포넌트(MN-M2-F) 추가, AdSense ID 환경변수(`ca-pub-placeholder`) 명시, 상태 Active로 변경 | 프로젝트 오너 |
 | v2.1 | 2026-03-10 | AdSense 승인 완료 반영: 실제 퍼블리셔 ID(`ca-pub-1815575117157423`) 적용, 승인 체크리스트 전체 완료 처리, ads.txt·메타 태그 항목 추가, 상태 업데이트 | 프로젝트 오너 |
+| v3.0 | 2026-03-11 | AdSense 콘텐츠 강화 계획 반영: (1) Must Have에 MN-M7~M19 추가(SiteHeader·SiteFooter·ToolHero·CookieConsentBanner·About 페이지·ToolHero 삽입·PDF 하위 라우트 SSR·GDPR 보강·광고 슬롯 배치·sitemap·구조화 데이터·랜딩 보강), (2) Should Have에 MN-S5~S10 추가(가이드 인덱스·마크다운 기초·PDF 병합·PDF 분할·OCR·단축키 가이드), (3) 사용자 스토리 US-MN-05~07 추가, (4) 비기능 요구사항에 SEO 및 콘텐츠 품질 섹션 추가, (5) AdSense 승인 체크리스트에 콘텐츠 품질 5개 항목 추가 | 프로젝트 오너 |

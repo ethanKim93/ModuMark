@@ -1,6 +1,7 @@
 ---
 name: ddd-architect
 model: claude-opus-4-6
+color: blue
 description: |
   DDD(Domain-Driven Design) 전문 서브에이전트. 다음 상황에서 사용한다:
   - 비즈니스 요구사항을 분석해 도메인을 식별하고 분리할 때

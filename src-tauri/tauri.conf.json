@@ -72,37 +72,7 @@
       }
     },
     "fs": {
-      "all": true,
-      "readFile": true,
-      "writeFile": true,
-      "readDir": true,
-      "copyFile": true,
-      "createDir": true,
-      "removeDir": true,
-      "removeFile": true,
-      "renameFile": true,
-      "exists": true,
-      "scope": {
-        "allow": [
-          { "path": "$HOME/**" },
-          { "path": "$DOCUMENT/**" },
-          { "path": "$DESKTOP/**" },
-          { "path": "$DOWNLOAD/**" },
-          { "path": "$APPDATA/com.modumark/**" },
-          { "path": "**/*.md" },
-          { "path": "**/*.markdown" },
-          { "path": "**/*.pdf" }
-        ]
-      }
-    },
-    "shell": {
-      "all": false,
-      "open": true
-    },
-    "dialog": {
-      "all": false,
-      "open": true,
-      "save": true
+      "requireLiteralLeadingDot": false
     }
   }
 }

@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Layers, Scissors, Shield, PanelTop, CloudOff } from "lucide-react";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { getSoftwareApplicationSchema } from "@/lib/structured-data";
-import { LandingHeader } from "@/components/layout/LandingHeader";
+import { getSoftwareApplicationSchema, generateFaqJsonLd, generateOrganizationJsonLd } from "@/lib/structured-data";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export const metadata: Metadata = {
   title: "ModuMark - 무료 마크다운 편집기 + PDF 통합 도구",
@@ -50,9 +51,10 @@ export default function Home() {
   return (
     <>
       <JsonLd data={getSoftwareApplicationSchema()} />
+      <JsonLd data={generateFaqJsonLd()} />
+      <JsonLd data={generateOrganizationJsonLd()} />
       <div className="min-h-screen bg-background text-foreground">
-        {/* 네비게이션 바 */}
-        <LandingHeader />
+        <SiteHeader />
 
         <main className="max-w-5xl mx-auto px-6">
           {/* Hero 섹션 */}
@@ -157,25 +159,7 @@ export default function Home() {
           </section>
         </main>
 
-        {/* 푸터 */}
-        <footer className="border-t border-border mt-8 py-8 px-6">
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[12px] text-muted-foreground">
-              © 2026 ModuMark. 무료로 제공됩니다.
-            </p>
-            <nav className="flex gap-4">
-              <Link href="/privacy" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">
-                개인정보처리방침
-              </Link>
-              <Link href="/terms" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">
-                이용약관
-              </Link>
-              <Link href="/security" className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">
-                보안 안내
-              </Link>
-            </nav>
-          </div>
-        </footer>
+        <SiteFooter />
       </div>
     </>
   );

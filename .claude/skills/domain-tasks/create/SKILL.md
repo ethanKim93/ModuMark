@@ -9,6 +9,7 @@ allowed-tools:
   - Read
   - Glob
   - Grep
+  - AskUserQuestion
   - mcp__shrimp-task-manager__split_tasks
   - mcp__shrimp-task-manager__list_tasks
 ---
@@ -128,7 +129,7 @@ allowed-tools:
 }
 ```
 
-### 5단계: 결과 요약 출력
+### 5단계: 결과 요약 출력 및 실행 여부 확인
 
 `mcp__shrimp-task-manager__list_tasks`로 현재 태스크 목록을 조회하여 결과를 출력한다.
 
@@ -143,9 +144,19 @@ allowed-tools:
 |---|---------|---------|-------|
 | 1 | [Markdown] Phase2A: ... | must-have | - |
 | 2 | [Markdown] Phase2A: ... | should-have | Task 1 |
-
-**다음 단계**: `/domain-tasks:run {domain}` 으로 태스크 실행 시작
 ```
+
+결과 출력 후 `AskUserQuestion`으로 사용자에게 질문한다:
+
+```
+지금 바로 /domain-tasks:run {domain} 을 실행할까요?
+```
+
+- 사용자가 **예/네/yes/y** 응답 → `/domain-tasks:run {domain}` 스킬 즉시 실행
+- 사용자가 **아니오/no/n** 응답 → 아래 안내 메시지만 출력하고 종료:
+  ```
+  언제든 `/domain-tasks:run {domain}` 으로 태스크 실행을 시작할 수 있습니다.
+  ```
 
 ---
 

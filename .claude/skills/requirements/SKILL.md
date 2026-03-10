@@ -164,7 +164,7 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 
 ---
 
-### Step 4: 결과 요약 출력
+### Step 4: 결과 요약 및 사용자 확인
 
 모든 도메인 처리가 완료되면 아래 형식으로 결과를 출력한다:
 
@@ -182,13 +182,27 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 
 ### 주요 변경사항 요약
 {각 도메인별 1~3줄 요약}
-
-### 다음 단계
-- 태스크 실행: `/domain-tasks:create {domain} {phase}` 로 태스크 생성 후 실행
-- 예: `/domain-tasks:create pdf 3` → PDF Phase 3 태스크 생성
 ```
 
 새 도메인이 추가된 경우 `docs/README.md`의 도메인 인덱스도 업데이트한다.
+
+**⚠️ 여기서 반드시 멈추고 사용자에게 아래 질문을 한다:**
+
+```
+태스크를 생성하시겠습니까?
+
+{식별된 각 도메인별로 아래 명령어를 나열}
+- `/domain-tasks:create {domain1} {phase}` → {domain1} Phase {phase} 태스크 생성
+- `/domain-tasks:create {domain2} {phase}` → {domain2} Phase {phase} 태스크 생성
+```
+
+---
+
+### Step 5: 사용자 응답 처리
+
+- 사용자가 **승인**하면(예/오케이/yes 등) → 해당 `/domain-tasks:create` 스킬을 호출한다
+- 사용자가 **거절**하면(아니오/no 등) → 종료한다
+- **절대로 사용자 확인 없이 태스크 생성이나 코드 구현으로 넘어가지 않는다**
 
 ---
 
@@ -213,3 +227,9 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 - BRD 결과 → PRD 에이전트에 전달
 - PRD 결과 → ROADMAP 에이전트에 전달
 - 각 에이전트가 이전 단계 문서를 직접 읽도록 지시
+
+### ROADMAP 완료 후 정지 원칙 (CRITICAL)
+- ROADMAP 업데이트가 끝나면 **반드시 멈추고** 사용자에게 다음 단계 진행 여부를 묻는다
+- 사용자 승인 없이 `/domain-tasks:create`, 코드 구현, 파일 생성/수정을 절대 하지 않는다
+- 이 스킬의 자동 범위는 BRD → PRD → ROADMAP **문서 작성까지**이다
+- 구현(코드 파일 생성/수정)은 이 스킬의 범위 밖이다

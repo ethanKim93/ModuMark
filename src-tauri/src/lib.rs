@@ -2,6 +2,7 @@
 // Tauri 2.0 플러그인 초기화 + .md 파일 연결 처리
 
 use tauri::Manager;
+use tauri::Emitter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

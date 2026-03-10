@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { pdfjsLib } from '@/lib/pdf/pdfViewer';
 import { DropZone } from './DropZone';
@@ -19,8 +19,10 @@ interface PdfViewerProps {
 
 export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: PdfViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const pdfDocRef = useRef<PDFDocumentProxy | null>(null);
+  const lastWheelTimeRef = useRef<number>(0);
   const setViewerState = usePdfFileStore((s) => s.setViewerState);
   const setCurrentPageStore = usePdfFileStore((s) => s.setCurrentPage);
 
@@ -140,7 +142,69 @@ export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: Pd
     setCurrentPageStore(currentPage - 1);
   }, [fileId, currentPage, scale, setViewerState, setCurrentPageStore]);
 
-  const SCALES = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+  const SCALES = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0, 5.0];
+
+  /* 현재 scale이 SCALES에 없으면(휠 줌으로 생성된 커스텀 값) 정렬 후 포함 */
+  const displayScales = useMemo(
+    () => (SCALES.includes(scale) ? SCALES : [...SCALES, scale].sort((a, b) => a - b)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scale]
+  );
+
+  /* 페이지 전환 시 컨테이너 스크롤 위치 초기화 */
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
+    }
+  }, [currentPage]);
+
+  /* 마우스 휠 핸들러 — canvas 위: 줌, 바깥: 페이지 이동 */
+  const handleWheel = useCallback(
+    (e: WheelEvent) => {
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (!canvas || !container || !pdfDocRef.current) return;
+
+      const target = e.target as Node;
+      const isOverCanvas = canvas.contains(target) || target === canvas;
+
+      if (isOverCanvas) {
+        /* canvas 위: 휠로 줌 */
+        e.preventDefault();
+        setScale((prev) => {
+          const next = e.deltaY > 0 ? prev * 0.9 : prev * 1.1;
+          return Math.min(5.0, Math.max(0.25, next));
+        });
+      } else {
+        /* canvas 바깥: 스크롤 끝에서 페이지 이동 (300ms 쓰로틀) */
+        const { scrollTop, clientHeight, scrollHeight } = container;
+        const atTop = scrollTop === 0;
+        const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+        if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
+          const now = Date.now();
+          if (now - lastWheelTimeRef.current < 300) return;
+          lastWheelTimeRef.current = now;
+
+          e.preventDefault();
+          if (e.deltaY < 0) {
+            setCurrentPage((p) => Math.max(1, p - 1));
+          } else {
+            setCurrentPage((p) => Math.min(numPages, p + 1));
+          }
+        }
+      }
+    },
+    [numPages]
+  );
+
+  /* 휠 이벤트 리스너 등록 (passive:false → preventDefault 가능) */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
 
   if (!activeFile) {
     return (
@@ -186,7 +250,7 @@ export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: Pd
           onChange={(e) => setScale(parseFloat(e.target.value))}
           className="text-[13px] bg-surface-secondary border border-border rounded px-2 py-1 text-foreground"
         >
-          {SCALES.map((s) => (
+          {displayScales.map((s) => (
             <option key={s} value={s}>
               {Math.round(s * 100)}%
             </option>
@@ -203,7 +267,7 @@ export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: Pd
       </div>
 
       {/* 캔버스 영역 */}
-      <div className="flex-1 overflow-auto flex justify-center bg-background p-4">
+      <div ref={containerRef} className="flex-1 overflow-auto flex justify-center bg-background p-4">
         {loading && (
           <div className="flex items-center justify-center w-full">
             <p className="text-[14px] text-muted-foreground">로딩 중...</p>

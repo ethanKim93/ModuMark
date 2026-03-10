@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
 export const metadata: Metadata = {
   title: "개인정보처리방침",
@@ -9,10 +10,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border px-6 py-3 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-primary">ModuMark</Link>
-        <Link href="/" className="text-[14px] text-muted-foreground hover:text-foreground">← 홈으로</Link>
-      </header>
+      <SiteHeader />
 
       <main className="max-w-3xl mx-auto px-6 py-12">
         <h1 className="text-2xl font-bold text-foreground mb-2">개인정보처리방침</h1>
@@ -106,12 +104,7 @@ export default function PrivacyPage() {
         </div>
       </main>
 
-      <footer className="border-t border-border mt-8 py-6 px-6">
-        <div className="max-w-3xl mx-auto flex gap-4">
-          <Link href="/terms" className="text-[12px] text-muted-foreground hover:text-foreground">이용약관</Link>
-          <Link href="/security" className="text-[12px] text-muted-foreground hover:text-foreground">보안 안내</Link>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

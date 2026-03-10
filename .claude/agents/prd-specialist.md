@@ -1,6 +1,7 @@
 ---
 name: prd-specialist
 model: claude-opus-4-6
+color: blue
 description: |
   PRD(Product Requirements Document) 전문 서브에이전트. 다음 상황에서 사용한다:
   - BRD의 비즈니스 요구사항을 제품 기능 명세로 전환할 때
