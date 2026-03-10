@@ -1,5 +1,6 @@
 ---
 name: brd-specialist
+model: claude-opus-4-6
 description: |
   BRD(Business Requirements Document) 전문 서브에이전트. 다음 상황에서 사용한다:
   - 비즈니스 목표와 문제를 정의할 때

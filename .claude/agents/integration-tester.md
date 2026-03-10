@@ -1,5 +1,6 @@
 ---
 name: integration-tester
+model: claude-opus-4-6
 description: |
   통합 테스트 전문 서브에이전트. 다음 상황에서 사용한다:
   - 여러 모듈/레이어 간 연동을 테스트할 때

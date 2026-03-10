@@ -1,6 +1,7 @@
 'use client';
 
-import { X } from 'lucide-react';
+import { useRef } from 'react';
+import { X, Plus } from 'lucide-react';
 import type { ViewerFileItem } from '@/stores/pdfFileStore';
 
 interface PdfFileTabsProps {
@@ -8,13 +9,25 @@ interface PdfFileTabsProps {
   activeFileId: string | null;
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
+  /** 새 파일 열기 콜백 */
+  onOpenFile: (file: File) => void;
 }
 
-/** 여러 PDF 파일을 브라우저 탭처럼 표시하는 탭 바. 단일 파일일 때는 렌더링하지 않음 */
-export function PdfFileTabs({ files, activeFileId, onSelect, onClose }: PdfFileTabsProps) {
-  // 파일이 2개 미만이면 탭 바 숨김
-  if (files.length < 2) return null;
+/**
+ * PDF 파일 탭 바.
+ * - 파일이 1개 이상이면 항상 렌더링 (단일 파일도 탭 표시)
+ * - "+" 버튼으로 새 파일 추가
+ */
+export function PdfFileTabs({ files, activeFileId, onSelect, onClose, onOpenFile }: PdfFileTabsProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) onOpenFile(file);
+    e.target.value = '';
+  };
+
+  // 파일이 없어도 "+" 버튼은 항상 표시
   return (
     <div className="flex items-end overflow-x-auto shrink-0 border-b border-border bg-surface px-2 pt-1 gap-0.5">
       {files.map((item) => {
@@ -50,6 +63,26 @@ export function PdfFileTabs({ files, activeFileId, onSelect, onClose }: PdfFileT
           </div>
         );
       })}
+
+      {/* 새 파일 열기 버튼 */}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="shrink-0 flex items-center justify-center w-7 h-7 mb-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-surface-secondary transition-colors"
+        title="새 PDF 파일 열기"
+        aria-label="새 PDF 파일 열기"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </button>
+
+      {/* 숨겨진 파일 input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        className="sr-only"
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

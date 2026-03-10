@@ -3,7 +3,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.2 |
+| 문서 버전 | v2.3 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/platform/BRD.md](./BRD.md) |
 | 상태 | Active (Phase 1 완료) |
@@ -99,6 +99,7 @@
 | PL-S6 | 보안 안내 페이지 | "파일이 서버에 전송되지 않습니다" 명시적 안내 |
 | PL-S7 | 세션 백업 인프라 (Tauri 앱 전용) | Tauri `app_data_dir()` API로 백업 디렉토리 접근. `{APP_DATA_DIR}/backup/` 경로에 `session.json` + `tab_{uuid}.md.bak` 파일 관리. Tauri FS 플러그인 사용. PROPOSAL-005 채택 |
 | PL-S8 | 앱 다운로드 안내 시스템 | 웹 환경 IndexedDB 50MB 소프트 한도 초과 시 표시하는 앱 다운로드 안내 UI. 다운로드 페이지(`/download`)로 연결하는 CTA 포함 다이얼로그. PROPOSAL-005 채택 |
+| PL-S10 | 랜딩 페이지 다운로드 CTA | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. 링크 대상: GitHub Releases 최신 릴리즈 URL. PL-BR12 구현 |
 
 ### Could Have
 
@@ -122,6 +123,7 @@
 | US-PL-05 | 나는 앱을 설치할 때 바이러스 경고 없이 안전하게 설치하고 싶다 | 코드 서명된 .exe/.msi 설치 파일 제공. Windows SmartScreen 경고 없음 |
 | US-PL-06 | 나는 첫 방문 시(랜딩 페이지) 다크/라이트 모드를 전환하고 싶다 | 랜딩 페이지 우측 상단에 ThemeToggle 버튼 표시. 다크 → 라이트 → 시스템 순환 동작. 페이지 이동 후에도 설정 유지 |
 | US-PL-07 | 나는 Windows에서 .pdf 파일을 더블클릭하여 ModuMark PDF 뷰어로 열고 싶다 | 앱 설치 후 .pdf 파일을 더블클릭하면 ModuMark `/pdf` 뷰어 페이지에서 해당 파일이 자동으로 열림 |
+| US-PL-08 | 나는 랜딩 페이지에서 바로 Windows 앱을 다운로드하고 싶다 | 랜딩 Hero CTA 영역에 "Windows 앱 다운로드" 버튼 표시. LandingHeader 네비게이션에 "다운로드" 링크 표시. 클릭 시 GitHub Releases 최신 릴리즈 페이지로 이동 |
 
 ---
 
@@ -259,3 +261,4 @@ GitHub Releases에 .exe/.msi 파일 업로드
 | v2.0 | 2026-03-08 | Phase 1 완료 반영: Next.js 16.1.6 기재, shadcn v4+@base-ui/react, Tailwind v4 CSS-first, next-themes 테마 전환(PL-S5) Phase 1 완료 표시, 레이아웃 컴포넌트 목록 현행화(AppShell, AppHeader, TabBar, PdfSidebar, ThemeToggle, ThemeProvider) | 프로젝트 오너 |
 | v2.1 | 2026-03-09 | PL-S5 설명 보강: 랜딩 페이지 포함 전체 페이지 테마 토글. LandingHeader.tsx 추가. US-PL-06 추가: 랜딩 페이지 테마 전환 사용자 스토리 | 프로젝트 오너 |
 | v2.2 | 2026-03-09 | PL-S3 확장: `.md/.pdf 파일 연결` + 파일 타입별 라우팅. PL-S9 신규: 파일 타입별 자동 라우팅. US-PL-03 확장: `.md 또는 .pdf 파일`. US-PL-07 신규: .pdf 파일 → PDF 뷰어. Tauri 설명 `.md/.pdf 파일 연결`로 변경 | 프로젝트 오너 |
+| v2.3 | 2026-03-10 | PL-S10 신규: 랜딩 페이지 다운로드 CTA — Hero CTA 버튼 + LandingHeader 네비게이션 링크, GitHub Releases 연결. US-PL-08 신규: 랜딩 페이지 다운로드 버튼 사용자 스토리 | 프로젝트 오너 |

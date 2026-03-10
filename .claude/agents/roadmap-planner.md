@@ -1,5 +1,6 @@
 ---
 name: roadmap-planner
+model: claude-opus-4-6
 description: |
   ROADMAP 전문 서브에이전트. 다음 상황에서 사용한다:
   - PRD 완성 후 도메인별 개발 로드맵을 작성할 때

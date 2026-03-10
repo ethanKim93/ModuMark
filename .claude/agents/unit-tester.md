@@ -1,5 +1,6 @@
 ---
 name: unit-tester
+model: claude-opus-4-6
 description: |
   단위 테스트 전문 서브에이전트. 다음 상황에서 사용한다:
   - 비즈니스 로직 함수/클래스의 단위 테스트를 작성할 때

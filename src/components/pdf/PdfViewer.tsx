@@ -204,17 +204,17 @@ export function PdfViewer({ file, fileId, currentPageIndex, onPdfDocLoaded }: Pd
 
       {/* 캔버스 영역 */}
       <div className="flex-1 overflow-auto flex justify-center bg-background p-4">
-        {loading ? (
+        {loading && (
           <div className="flex items-center justify-center w-full">
             <p className="text-[14px] text-muted-foreground">로딩 중...</p>
           </div>
-        ) : (
-          <canvas
-            ref={canvasRef}
-            className="shadow-lg rounded"
-            style={{ maxWidth: '100%', height: 'auto' }}
-          />
         )}
+        {/* canvas를 항상 DOM에 유지 — loading 중에는 hidden 처리하여 canvasRef가 null이 되지 않도록 함 */}
+        <canvas
+          ref={canvasRef}
+          className={`shadow-lg rounded${loading ? ' hidden' : ''}`}
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
       </div>
     </div>
   );

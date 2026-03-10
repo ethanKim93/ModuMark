@@ -3,7 +3,7 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v3.0 |
+| 문서 버전 | v3.1 |
 | 작성일 | 2026-03-10 |
 | 상위 문서 | [docs/README.md](../README.md) · [docs/platform/PRD.md](./PRD.md) |
 | 상태 | Active (Phase 1 완료) |
@@ -56,6 +56,8 @@
 | Lighthouse SEO 90점 이상 달성 | P0 | Core Web Vitals 최적화 |
 | **랜딩 페이지 테마 토글 UI 추가** | P0 | `LandingHeader.tsx` 분리 — ThemeToggle 포함. `page.tsx` 인라인 header → LandingHeader 교체. PL-BR10·US-PL-06 구현 |
 | 다운로드 페이지 (/download) | P1 | Windows 앱 출시 후 다운로드 링크 제공 |
+| **랜딩 Hero CTA 다운로드 버튼** | P1 | Hero CTA 영역에 "Windows 앱 다운로드" 버튼 추가 (lucide-react `Download` 아이콘). GitHub Releases 최신 릴리즈로 연결. PL-BR12 구현 |
+| **LandingHeader 다운로드 링크** | P1 | `LandingHeader.tsx` 네비게이션에 "다운로드" 링크 추가. GitHub Releases 최신 릴리즈로 연결. PL-BR12 구현 |
 | AdSense 심사 신청 | P1 | 트래픽·콘텐츠 충분 시 신청 |
 
 ---
@@ -144,3 +146,4 @@
 | v2.1 | 2026-03-09 | Phase 1 테마 전환 항목에 랜딩 페이지 Phase 2A 보완 기록. Phase 2A에 "랜딩 페이지 테마 토글 UI 추가(LandingHeader.tsx)" 태스크 추가 | 프로젝트 오너 |
 | v2.2 | 2026-03-09 | Phase 2B P2-3 확장: `.md/.pdf 파일 연결 등록`. P2-8 신규: 파일 타입별 자동 라우팅. 테스트 기준에 `.pdf 파일 연결 → PDF 뷰어 열기` 통합 테스트 추가 | 프로젝트 오너 |
 | v3.0 | 2026-03-10 | Phase 번호 체계 변경: 서브 Phase(A/B) → 순차 번호. Phase 2A→2, 2B→3, 3→4로 재매핑. P2-x ID를 P3-x로 변경. Phase 3 태스크 정의 블록 추가. 의존성 참조 업데이트 | 프로젝트 오너 |
+| v3.1 | 2026-03-10 | Phase 2에 "랜딩 Hero CTA 다운로드 버튼", "LandingHeader 다운로드 링크" 태스크 추가 (PL-BR12, PL-S10 구현). GitHub Releases 연결 명세 포함 | 프로젝트 오너 |

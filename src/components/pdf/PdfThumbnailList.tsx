@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { X, GripVertical, Check } from 'lucide-react';
 import {
   DndContext,
@@ -9,6 +9,8 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragStartEvent,
+  DragOverlay,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -119,11 +121,29 @@ function SortableItem({
   );
 }
 
+/* DragOverlay 단일 아이템 미리보기 */
+function DragPreviewItem({ item }: { item: PdfPageItem }) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-md p-1 bg-surface border border-primary/50 shadow-lg opacity-90">
+      <div className="shrink-0 w-8 h-10 bg-surface border border-border rounded overflow-hidden flex items-center justify-center">
+        {item.thumbnail ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.thumbnail} alt={item.pageLabel} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-muted-foreground/10" />
+        )}
+      </div>
+      <span className="text-[11px] text-foreground truncate max-w-[120px]">{item.pageLabel}</span>
+    </div>
+  );
+}
+
 /* 페이지 썸네일 리스트 전체 */
 export function PdfThumbnailList() {
   const {
     pages,
     reorderPages,
+    reorderMultiplePages,
     activePageId,
     setActivePageId,
     selectedPageIds,
@@ -131,15 +151,36 @@ export function PdfThumbnailList() {
     selectAllPages,
     deselectAllPages,
     selectPageRange,
+    setCurrentPage,
   } = usePdfFileStore();
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const lastClickedIdRef = useRef<string | null>(null);
 
-  const sensors = useSensors(useSensor(PointerSensor));
+  // 현재 드래그 중인 아이템 ID
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+
+  // 멀티 드래그 여부: 드래그 아이템이 선택 목록에 있고 2개 이상 선택 시
+  const isMultiDrag =
+    activeDragId !== null &&
+    selectedPageIds.has(activeDragId) &&
+    selectedPageIds.size > 1;
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(String(event.active.id));
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
+    setActiveDragId(null);
+    if (!over || active.id === over.id) return;
+
+    if (isMultiDrag) {
+      // 멀티 드래그: 선택된 페이지들을 target 위치로 이동
+      reorderMultiplePages(selectedPageIds, String(over.id));
+    } else {
+      // 단일 드래그
       reorderPages(String(active.id), String(over.id));
     }
   };
@@ -153,7 +194,13 @@ export function PdfThumbnailList() {
 
   const handleClick = (id: string) => {
     setActivePageId(id);
-    // 메인 뷰어의 해당 페이지로 스크롤
+    const pageItem = pages.find((p) => p.id === id);
+    if (!pageItem) return;
+
+    // setCurrentPage 로 뷰어 페이지 이동 (PdfViewer currentPageIndex 연동)
+    setCurrentPage(pageItem.pageIndex);
+
+    // data-page-id 속성으로 메인 뷰어 해당 페이지 직접 스크롤
     const el = document.querySelector(`[data-page-id="${id}"]`);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -170,6 +217,9 @@ export function PdfThumbnailList() {
   };
 
   const allSelected = pages.length > 0 && selectedPageIds.size === pages.length;
+
+  // 드래그 오버레이에서 표시할 아이템
+  const activeDragItem = activeDragId ? pages.find((p) => p.id === activeDragId) ?? null : null;
 
   if (pages.length === 0) {
     return (
@@ -189,7 +239,12 @@ export function PdfThumbnailList() {
         {allSelected ? '전체 해제' : '전체 선택'}
       </button>
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
         <SortableContext items={pages.map((p) => p.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-0.5">
             {pages.map((item, i) => (
@@ -209,6 +264,19 @@ export function PdfThumbnailList() {
             ))}
           </div>
         </SortableContext>
+
+        {/* 드래그 오버레이: 멀티면 뱃지, 단일이면 아이템 미리보기 */}
+        <DragOverlay>
+          {activeDragItem && (
+            isMultiDrag ? (
+              <div className="flex items-center gap-2 rounded-md px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium shadow-lg">
+                {selectedPageIds.size}개 페이지
+              </div>
+            ) : (
+              <DragPreviewItem item={activeDragItem} />
+            )
+          )}
+        </DragOverlay>
       </DndContext>
     </div>
   );

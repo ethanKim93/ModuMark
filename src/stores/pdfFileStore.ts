@@ -7,14 +7,6 @@ export interface PdfFileItem {
   file: File;
 }
 
-/** 통합 사이드바 하단 병합 대상 파일 항목 */
-export interface MergeFileEntry {
-  id: string;
-  file: File;
-  name: string;
-  pageCount: number;
-}
-
 /** 뷰어 탭에 열린 파일 항목 */
 export interface ViewerFileItem {
   id: string;
@@ -41,6 +33,13 @@ interface HistoryEntry {
   pages: PdfPageItem[];
 }
 
+/** 탭별 페이지·파일·선택 상태 스냅샷 */
+interface TabSnapshot {
+  pages: PdfPageItem[];
+  files: PdfFileItem[];
+  selectedPageIds: Set<string>;
+}
+
 const MAX_HISTORY = 30;
 
 interface PdfFileStore {
@@ -61,13 +60,18 @@ interface PdfFileStore {
   currentPageIndex: number;
   /** 통합 사이드바: 너비 (200~400px) */
   sidebarWidth: number;
-  /** 통합 사이드바 하단: 병합 대상 파일 목록 */
-  mergeFiles: MergeFileEntry[];
+  /** 탭 ID → 페이지 목록 스냅샷 (탭 전환 시 저장/복원) */
+  tabPages: Record<string, PdfPageItem[]>;
+  /** 탭 ID → 파일 목록 스냅샷 */
+  tabFiles: Record<string, PdfFileItem[]>;
+  /** 탭 ID → 선택된 페이지 ID 집합 */
+  tabSelectedPageIds: Record<string, Set<string>>;
+
   setActiveFile: (file: File | null) => void;
   clearActiveFile: () => void;
   /** 뷰어 탭 닫기 (이전/다음 탭으로 자동 포커스) */
   closeViewerFile: (id: string) => void;
-  /** 뷰어 탭 전환 */
+  /** 뷰어 탭 전환 (탭별 pages/files/selectedPageIds 저장·복원) */
   setActiveViewerFileId: (id: string) => void;
   /** 탭 뷰어 상태 업데이트 (부분 갱신 가능) */
   setViewerState: (fileId: string, state: Partial<ViewerState>) => void;
@@ -75,6 +79,10 @@ interface PdfFileStore {
   addPages: (newPages: PdfPageItem[]) => void;
   removePage: (pageId: string) => void;
   reorderPages: (activeId: string, overId: string) => void;
+  /** 선택된 여러 페이지를 targetId 위치로 이동 */
+  reorderMultiplePages: (pageIds: Set<string>, targetId: string) => void;
+  /** 현재 selectedPageIds 에 포함된 페이지 모두 삭제 */
+  removeSelectedPages: () => void;
   clearAll: () => void;
   setPageThumbnail: (pageId: string, dataUrl: string) => void;
   setActivePageId: (id: string | null) => void;
@@ -87,14 +95,6 @@ interface PdfFileStore {
   setCurrentPage: (index: number) => void;
   /** 사이드바 너비 설정 (200~400 clamp) */
   setSidebarWidth: (width: number) => void;
-  /** 병합 파일 추가 (최대 19개, 합산 100MB 제한) */
-  addMergeFile: (entry: MergeFileEntry) => string | null;
-  /** 병합 파일 제거 */
-  removeMergeFile: (id: string) => void;
-  /** 병합 파일 순서 변경 (dnd-kit) */
-  reorderMergeFiles: (activeId: string, overId: string) => void;
-  /** 병합 파일 목록 초기화 */
-  clearMergeFiles: () => void;
 }
 
 export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
@@ -109,26 +109,50 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
   selectedPageIds: new Set<string>(),
   currentPageIndex: 0,
   sidebarWidth: 260,
-  mergeFiles: [],
+  tabPages: {},
+  tabFiles: {},
+  tabSelectedPageIds: {},
 
   setActiveFile: (file) => {
     if (!file) {
       set({ activeFile: null });
       return;
     }
-    const { viewerFiles } = get();
-    // 동일 파일명이 이미 탭에 있으면 해당 탭 활성화
+    const { viewerFiles, activeViewerFileId, pages, files, selectedPageIds,
+            tabPages, tabFiles, tabSelectedPageIds } = get();
+
+    // 동일 파일명이 이미 탭에 있으면 setActiveViewerFileId로 위임 (스냅샷 저장/복원 포함)
     const existing = viewerFiles.find((vf) => vf.file.name === file.name);
     if (existing) {
-      set({ activeFile: file, activeViewerFileId: existing.id });
-    } else {
-      const newItem: ViewerFileItem = { id: crypto.randomUUID(), file };
-      set({
-        activeFile: file,
-        viewerFiles: [...viewerFiles, newItem],
-        activeViewerFileId: newItem.id,
-      });
+      get().setActiveViewerFileId(existing.id);
+      return;
     }
+
+    // 새 탭 생성: 현재 탭 상태를 스냅샷에 저장 후 새 탭은 빈 상태로 시작
+    let newTabPages = tabPages;
+    let newTabFiles = tabFiles;
+    let newTabSelectedPageIds = tabSelectedPageIds;
+
+    if (activeViewerFileId) {
+      newTabPages = { ...tabPages, [activeViewerFileId]: pages };
+      newTabFiles = { ...tabFiles, [activeViewerFileId]: files };
+      newTabSelectedPageIds = { ...tabSelectedPageIds, [activeViewerFileId]: selectedPageIds };
+    }
+
+    const newItem: ViewerFileItem = { id: crypto.randomUUID(), file };
+    set({
+      activeFile: file,
+      viewerFiles: [...viewerFiles, newItem],
+      activeViewerFileId: newItem.id,
+      // 새 탭은 빈 상태로 시작
+      pages: [],
+      files: [],
+      selectedPageIds: new Set<string>(),
+      // 이전 탭 스냅샷 보존
+      tabPages: newTabPages,
+      tabFiles: newTabFiles,
+      tabSelectedPageIds: newTabSelectedPageIds,
+    });
   },
 
   clearActiveFile: () => set({ activeFile: null, activeViewerFileId: null }),
@@ -149,15 +173,25 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
         newActiveFile = next?.file ?? null;
       }
 
-      // 닫힌 탭의 뷰어 상태 제거
+      // 닫힌 탭의 뷰어 상태·스냅샷 제거
       const newViewerStates = { ...s.viewerStates };
       delete newViewerStates[id];
+
+      const newTabPages = { ...s.tabPages };
+      delete newTabPages[id];
+      const newTabFiles = { ...s.tabFiles };
+      delete newTabFiles[id];
+      const newTabSelectedPageIds = { ...s.tabSelectedPageIds };
+      delete newTabSelectedPageIds[id];
 
       return {
         viewerFiles: newViewerFiles,
         activeViewerFileId: newActiveViewerFileId,
         activeFile: newActiveFile,
         viewerStates: newViewerStates,
+        tabPages: newTabPages,
+        tabFiles: newTabFiles,
+        tabSelectedPageIds: newTabSelectedPageIds,
       };
     }),
 
@@ -165,7 +199,42 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
     set((s) => {
       const target = s.viewerFiles.find((vf) => vf.id === id);
       if (!target) return s;
-      return { activeViewerFileId: id, activeFile: target.file };
+
+      // 현재 탭 상태를 스냅샷에 저장 (탭 이탈 시)
+      const prevTabId = s.activeViewerFileId;
+      let newTabPages = s.tabPages;
+      let newTabFiles = s.tabFiles;
+      let newTabSelectedPageIds = s.tabSelectedPageIds;
+
+      if (prevTabId && prevTabId !== id) {
+        newTabPages = { ...s.tabPages, [prevTabId]: s.pages };
+        newTabFiles = { ...s.tabFiles, [prevTabId]: s.files };
+        newTabSelectedPageIds = { ...s.tabSelectedPageIds, [prevTabId]: s.selectedPageIds };
+      }
+
+      // 전환할 탭의 스냅샷 복원
+      const restoredSnapshot: TabSnapshot | null = newTabPages[id]
+        ? {
+            pages: newTabPages[id],
+            files: newTabFiles[id] ?? [],
+            selectedPageIds: newTabSelectedPageIds[id] ?? new Set<string>(),
+          }
+        : null;
+
+      return {
+        activeViewerFileId: id,
+        activeFile: target.file,
+        tabPages: newTabPages,
+        tabFiles: newTabFiles,
+        tabSelectedPageIds: newTabSelectedPageIds,
+        ...(restoredSnapshot
+          ? {
+              pages: restoredSnapshot.pages,
+              files: restoredSnapshot.files,
+              selectedPageIds: restoredSnapshot.selectedPageIds,
+            }
+          : {}),
+      };
     }),
 
   setViewerState: (fileId, state) =>
@@ -229,6 +298,45 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
       return { pages: arrayMove(s.pages, oldIndex, newIndex), history: newHistory };
     }),
 
+  reorderMultiplePages: (pageIds, targetId) =>
+    set((s) => {
+      const targetIndex = s.pages.findIndex((p) => p.id === targetId);
+      if (targetIndex === -1) return s;
+
+      // 선택된 페이지와 나머지 페이지 분리
+      const selected = s.pages.filter((p) => pageIds.has(p.id));
+      const rest = s.pages.filter((p) => !pageIds.has(p.id));
+
+      // targetId 가 선택 목록에 없으면 rest 기준으로 삽입 위치 계산
+      const insertIndex = rest.findIndex((p) => p.id === targetId);
+      const newPages =
+        insertIndex === -1
+          ? [...rest, ...selected]
+          : [...rest.slice(0, insertIndex), ...selected, ...rest.slice(insertIndex)];
+
+      const newHistory = [...s.history, { files: s.files, pages: s.pages }].slice(-MAX_HISTORY);
+      return { pages: newPages, history: newHistory };
+    }),
+
+  removeSelectedPages: () =>
+    set((s) => {
+      if (s.selectedPageIds.size === 0) return s;
+      const newPages = s.pages.filter((p) => !s.selectedPageIds.has(p.id));
+      const usedFileIds = new Set(newPages.map((p) => p.fileId));
+      const newFiles = s.files.filter((f) => usedFileIds.has(f.id));
+      const newActivePageId = s.activePageId && s.selectedPageIds.has(s.activePageId)
+        ? null
+        : s.activePageId;
+      const newHistory = [...s.history, { files: s.files, pages: s.pages }].slice(-MAX_HISTORY);
+      return {
+        pages: newPages,
+        files: newFiles,
+        activePageId: newActivePageId,
+        selectedPageIds: new Set<string>(),
+        history: newHistory,
+      };
+    }),
+
   clearAll: () => set({ files: [], pages: [], activePageId: null, history: [], selectedPageIds: new Set() }),
 
   setPageThumbnail: (pageId, dataUrl) =>
@@ -281,32 +389,4 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
 
   setSidebarWidth: (width) =>
     set({ sidebarWidth: Math.min(400, Math.max(200, width)) }),
-
-  addMergeFile: (entry) => {
-    const { mergeFiles } = get();
-    // 최대 19개 제한 (현재 열린 파일 1개 포함 총 20개)
-    if (mergeFiles.length >= 19) {
-      return '최대 20개 파일까지 병합 가능합니다.';
-    }
-    // 합산 크기 100MB 제한
-    const totalSize = mergeFiles.reduce((sum, f) => sum + f.file.size, 0) + entry.file.size;
-    if (totalSize > PDF_MAX_TOTAL_SIZE) {
-      return '파일 크기 합계가 100MB를 초과합니다.';
-    }
-    set({ mergeFiles: [...mergeFiles, entry] });
-    return null;
-  },
-
-  removeMergeFile: (id) =>
-    set((s) => ({ mergeFiles: s.mergeFiles.filter((f) => f.id !== id) })),
-
-  reorderMergeFiles: (activeId, overId) =>
-    set((s) => {
-      const oldIndex = s.mergeFiles.findIndex((f) => f.id === activeId);
-      const newIndex = s.mergeFiles.findIndex((f) => f.id === overId);
-      if (oldIndex === -1 || newIndex === -1) return s;
-      return { mergeFiles: arrayMove(s.mergeFiles, oldIndex, newIndex) };
-    }),
-
-  clearMergeFiles: () => set({ mergeFiles: [] }),
 }));

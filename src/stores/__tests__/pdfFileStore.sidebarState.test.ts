@@ -1,20 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { usePdfFileStore, MergeFileEntry } from '../pdfFileStore';
+import { usePdfFileStore } from '../pdfFileStore';
 
 /** 각 테스트 전 사이드바 상태 초기화 */
 beforeEach(() => {
   usePdfFileStore.setState({
     currentPageIndex: 0,
     sidebarWidth: 260,
-    mergeFiles: [],
+    pages: [],
+    files: [],
+    selectedPageIds: new Set(),
+    history: [],
   });
 });
-
-/** 테스트용 MergeFileEntry 생성 헬퍼 */
-function makeMergeFile(name: string, sizeBytes: number, pageCount = 5): MergeFileEntry {
-  const file = new File([new Uint8Array(sizeBytes)], name, { type: 'application/pdf' });
-  return { id: crypto.randomUUID(), file, name, pageCount };
-}
 
 describe('pdfFileStore — sidebarState', () => {
 
@@ -61,84 +58,83 @@ describe('pdfFileStore — sidebarState', () => {
     });
   });
 
-  // ────── mergeFiles — 추가 ──────
-  describe('addMergeFile', () => {
-    it('파일을 목록에 추가한다', () => {
-      const entry = makeMergeFile('a.pdf', 1024);
-      const result = usePdfFileStore.getState().addMergeFile(entry);
-      expect(result).toBeNull();
-      expect(usePdfFileStore.getState().mergeFiles).toHaveLength(1);
-      expect(usePdfFileStore.getState().mergeFiles[0].name).toBe('a.pdf');
+  // ────── reorderMultiplePages ──────
+  describe('reorderMultiplePages', () => {
+    /** 테스트용 PdfPageItem 생성 헬퍼 */
+    function makePage(id: string, pageIndex = 0) {
+      return {
+        id,
+        fileId: 'file-1',
+        fileName: 'test.pdf',
+        pageIndex,
+        pageLabel: `p.${pageIndex + 1}`,
+        thumbnail: null,
+      };
+    }
+
+    it('선택된 여러 페이지를 targetId 위치로 이동한다', () => {
+      const a = makePage('mp-a', 0);
+      const b = makePage('mp-b', 1);
+      const c = makePage('mp-c', 2);
+      const d = makePage('mp-d', 3);
+      usePdfFileStore.setState({ pages: [a, b, c, d], history: [] });
+
+      // b, c를 선택하여 d 위치로 이동
+      usePdfFileStore.getState().reorderMultiplePages(new Set(['mp-b', 'mp-c']), 'mp-d');
+
+      const ids = usePdfFileStore.getState().pages.map((p) => p.id);
+      // rest = [a, d], insertIndex = 1(d의 위치) → [a, b, c, d]
+      expect(ids).toEqual(['mp-a', 'mp-b', 'mp-c', 'mp-d']);
     });
 
-    it('19개 초과 시 추가를 거부하고 오류 메시지를 반환한다', () => {
-      // 19개 채우기
-      for (let i = 0; i < 19; i++) {
-        usePdfFileStore.getState().addMergeFile(makeMergeFile(`file${i}.pdf`, 100));
-      }
-      const result = usePdfFileStore.getState().addMergeFile(makeMergeFile('overflow.pdf', 100));
-      expect(result).toMatch(/20개/);
-      expect(usePdfFileStore.getState().mergeFiles).toHaveLength(19);
-    });
+    it('존재하지 않는 targetId면 순서를 변경하지 않는다', () => {
+      const a = makePage('mx-a', 0);
+      const b = makePage('mx-b', 1);
+      usePdfFileStore.setState({ pages: [a, b], history: [] });
 
-    it('합산 100MB 초과 시 추가를 거부하고 오류 메시지를 반환한다', () => {
-      // 50MB 파일 1개 추가
-      const MB50 = 50 * 1024 * 1024;
-      usePdfFileStore.getState().addMergeFile(makeMergeFile('big1.pdf', MB50));
-      // 60MB 파일 추가 시 초과
-      const MB60 = 60 * 1024 * 1024;
-      const result = usePdfFileStore.getState().addMergeFile(makeMergeFile('big2.pdf', MB60));
-      expect(result).toMatch(/100MB/);
-      expect(usePdfFileStore.getState().mergeFiles).toHaveLength(1);
-    });
-  });
-
-  // ────── mergeFiles — 제거 ──────
-  describe('removeMergeFile', () => {
-    it('특정 ID의 파일을 목록에서 제거한다', () => {
-      const entry1 = makeMergeFile('a.pdf', 100);
-      const entry2 = makeMergeFile('b.pdf', 100);
-      usePdfFileStore.getState().addMergeFile(entry1);
-      usePdfFileStore.getState().addMergeFile(entry2);
-
-      usePdfFileStore.getState().removeMergeFile(entry1.id);
-      const { mergeFiles } = usePdfFileStore.getState();
-      expect(mergeFiles).toHaveLength(1);
-      expect(mergeFiles[0].name).toBe('b.pdf');
+      usePdfFileStore.getState().reorderMultiplePages(new Set(['mx-a']), 'nonexistent');
+      const ids = usePdfFileStore.getState().pages.map((p) => p.id);
+      // targetId 가 pages에 없으면 early return → 순서 그대로 유지
+      expect(ids).toEqual(['mx-a', 'mx-b']);
     });
   });
 
-  // ────── mergeFiles — 재정렬 ──────
-  describe('reorderMergeFiles', () => {
-    it('dnd-kit 방식으로 파일 순서를 변경한다', () => {
-      const a = makeMergeFile('a.pdf', 100);
-      const b = makeMergeFile('b.pdf', 100);
-      const c = makeMergeFile('c.pdf', 100);
-      usePdfFileStore.getState().addMergeFile(a);
-      usePdfFileStore.getState().addMergeFile(b);
-      usePdfFileStore.getState().addMergeFile(c);
+  // ────── removeSelectedPages ──────
+  describe('removeSelectedPages', () => {
+    function makePage(id: string) {
+      return {
+        id,
+        fileId: 'file-1',
+        fileName: 'test.pdf',
+        pageIndex: 0,
+        pageLabel: 'p.1',
+        thumbnail: null,
+      };
+    }
 
-      // a를 c 위치로 이동
-      usePdfFileStore.getState().reorderMergeFiles(a.id, c.id);
-      const names = usePdfFileStore.getState().mergeFiles.map((f) => f.name);
-      expect(names).toEqual(['b.pdf', 'c.pdf', 'a.pdf']);
+    it('선택된 페이지를 모두 삭제한다', () => {
+      const a = makePage('a');
+      const b = makePage('b');
+      const c = makePage('c');
+      usePdfFileStore.setState({
+        pages: [a, b, c],
+        selectedPageIds: new Set(['a', 'c']),
+      });
+
+      usePdfFileStore.getState().removeSelectedPages();
+
+      const { pages, selectedPageIds } = usePdfFileStore.getState();
+      expect(pages.map((p) => p.id)).toEqual(['b']);
+      expect(selectedPageIds.size).toBe(0);
     });
 
-    it('존재하지 않는 ID는 상태를 변경하지 않는다', () => {
-      const a = makeMergeFile('a.pdf', 100);
-      usePdfFileStore.getState().addMergeFile(a);
-      usePdfFileStore.getState().reorderMergeFiles('invalid-id', a.id);
-      expect(usePdfFileStore.getState().mergeFiles).toHaveLength(1);
-    });
-  });
+    it('선택이 없으면 아무것도 변경하지 않는다', () => {
+      const a = makePage('a');
+      usePdfFileStore.setState({ pages: [a], selectedPageIds: new Set() });
 
-  // ────── mergeFiles — 초기화 ──────
-  describe('clearMergeFiles', () => {
-    it('모든 병합 파일을 초기화한다', () => {
-      usePdfFileStore.getState().addMergeFile(makeMergeFile('a.pdf', 100));
-      usePdfFileStore.getState().addMergeFile(makeMergeFile('b.pdf', 100));
-      usePdfFileStore.getState().clearMergeFiles();
-      expect(usePdfFileStore.getState().mergeFiles).toHaveLength(0);
+      usePdfFileStore.getState().removeSelectedPages();
+
+      expect(usePdfFileStore.getState().pages).toHaveLength(1);
     });
   });
 });

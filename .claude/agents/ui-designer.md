@@ -1,5 +1,6 @@
 ---
 name: ui-designer
+model: claude-opus-4-6
 description: |
   UI 디자이너 서브에이전트. 다음 상황에서 사용한다:
   - Figma 디자인을 shadcn/ui + Tailwind CSS 코드로 변환할 때

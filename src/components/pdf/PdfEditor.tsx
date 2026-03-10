@@ -11,8 +11,9 @@ import { SplitDialog } from './dialogs/SplitDialog';
 import { CompressDialog } from './dialogs/CompressDialog';
 import { OcrDialog } from './dialogs/OcrDialog';
 import UnifiedPdfSidebar from './UnifiedPdfSidebar';
-import { mergePdfs, PdfMergeError } from '@/lib/pdf/pdfMerge';
+import { mergePagesPdf, MergePageSpec, PdfMergeError } from '@/lib/pdf/pdfMerge';
 import { downloadPdf } from '@/lib/pdf/downloadPdf';
+import { extractPages } from '@/lib/pdf/extractPages';
 import { usePdfFileStore } from '@/stores/pdfFileStore';
 
 export function PdfEditor() {
@@ -24,27 +25,22 @@ export function PdfEditor() {
     activeViewerFileId,
     closeViewerFile,
     setActiveViewerFileId,
-    mergeFiles: storeMergeFiles,
-    addMergeFile,
-    removeMergeFile,
-    clearMergeFiles,
     setCurrentPage,
     currentPageIndex,
+    clearAll,
+    pages,
+    files,
   } = usePdfFileStore();
 
-  // 파일 추가(병합용) 숨겨진 input 참조
-  const addFileInputRef = useRef<HTMLInputElement>(null);
-
-  // 사이드바에 전달할 pdfDoc (Task 5에서 PdfViewer로부터 콜백으로 연결)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [pdfDoc, setPdfDoc] = useState<any | null>(null);
+  // 페이지 추가용 숨겨진 input 참조
+  const addPagesInputRef = useRef<HTMLInputElement>(null);
 
   // 다이얼로그 열림 상태
   const [splitDialogOpen, setSplitDialogOpen] = useState(false);
   const [compressDialogOpen, setCompressDialogOpen] = useState(false);
   const [ocrDialogOpen, setOcrDialogOpen] = useState(false);
 
-  // 병합 흐름 상태 (pdfFileStore.mergeFiles 기반)
+  // 병합 흐름 상태
   const [mergeLoading, setMergeLoading] = useState(false);
   const [mergeProgress, setMergeProgress] = useState(0);
   const [mergeProgressStatus, setMergeProgressStatus] = useState('');
@@ -66,40 +62,70 @@ export function PdfEditor() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [undo]);
 
+  // activeFile 변경 시 pages 초기화 후 extractPages 자동 실행
+  useEffect(() => {
+    if (!activeFile) return;
+
+    // 탭 전환 시 이미 해당 탭 스냅샷이 복원된 경우 재추출 불필요
+    // (activeViewerFileId 기준 tabPages 스냅샷이 있으면 스킵)
+    // extractPages는 pages가 비어 있을 때만 실행
+    if (pages.length > 0) return;
+
+    const fileItem = files.find((f) => f.file.name === activeFile.name);
+    if (!fileItem) {
+      // addFiles 없이 setActiveFile만 호출된 경우 직접 fileItem 생성
+      const newFileItem = { id: crypto.randomUUID(), file: activeFile };
+      extractPages(newFileItem).catch(() => {
+        // 페이지 추출 실패 무시
+      });
+    } else {
+      extractPages(fileItem).catch(() => {
+        // 페이지 추출 실패 무시
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFile]);
+
   const handleSplit = () => setSplitDialogOpen(true);
   const handleCompress = () => setCompressDialogOpen(true);
   const handleOcr = () => setOcrDialogOpen(true);
-  const handleAddFile = () => addFileInputRef.current?.click();
+  const handleAddPages = () => addPagesInputRef.current?.click();
 
-  /* 병합용 파일 추가 input 핸들러 */
-  const handleAddFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-    files.forEach((file) => {
-      addMergeFile({ id: crypto.randomUUID(), file, name: file.name, pageCount: 0 });
-    });
-    e.target.value = '';
-  };
-
-  // 사이드바 페이지 변경 핸들러 (Task 5에서 뷰어 스크롤 동기화 추가)
+  // 사이드바 페이지 변경 핸들러
   const handlePageChange = useCallback((pageIndex: number) => {
     setCurrentPage(pageIndex);
   }, [setCurrentPage]);
 
-  // activeFile 변경 시 pdfDoc 초기화
-  useEffect(() => {
-    setPdfDoc(null);
-  }, [activeFile]);
+  /* 페이지 추가 input 핸들러: 새 파일의 페이지를 기존 pages에 append */
+  const handleAddPagesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFiles = Array.from(e.target.files ?? []);
+    for (const file of selectedFiles) {
+      const newFileItem = { id: crypto.randomUUID(), file };
+      await extractPages(newFileItem).catch(() => {
+        // 개별 파일 추출 실패 무시
+      });
+    }
+    e.target.value = '';
+  };
 
-  // 병합 실행: activeFile + pdfFileStore.mergeFiles를 하나로 합치기
+  /* 병합 저장: pages 배열 순서대로 MergePageSpec 구성 후 mergePagesPdf 호출 */
   const handleMergeSave = useCallback(async () => {
-    if (!activeFile || storeMergeFiles.length === 0) return;
+    if (pages.length === 0) return;
     setMergeError(null);
     setMergeLoading(true);
     setMergeProgress(0);
 
     try {
-      const allFiles = [activeFile, ...storeMergeFiles.map((e) => e.file)];
-      const bytes = await mergePdfs(allFiles, (p, s) => {
+      // pages 순서대로 파일 참조 구성
+      const specs: MergePageSpec[] = pages.map((p) => {
+        const fileItem = files.find((f) => f.id === p.fileId);
+        return {
+          file: fileItem?.file ?? activeFile!,
+          pageIndex: p.pageIndex,
+        };
+      });
+
+      const bytes = await mergePagesPdf(specs, (p, s) => {
         setMergeProgress(p);
         setMergeProgressStatus(s);
       });
@@ -115,7 +141,12 @@ export function PdfEditor() {
       setMergeLoading(false);
       setMergeProgress(0);
     }
-  }, [activeFile, storeMergeFiles]);
+  }, [pages, files, activeFile]);
+
+  /* 새 파일 열기 (PdfFileTabs "+" 버튼) */
+  const handleOpenFile = useCallback((file: File) => {
+    setActiveFile(file);
+  }, [setActiveFile]);
 
   const mergeDefaultFilename = activeFile
     ? `${activeFile.name.replace(/\.pdf$/i, '')}_merged`
@@ -159,7 +190,7 @@ export function PdfEditor() {
           setMergeDownloadOpen(false);
           if (pendingMergeBytes) downloadPdf(pendingMergeBytes, filename);
           setPendingMergeBytes(null);
-          clearMergeFiles();
+          clearAll();
         }}
         onCancel={() => {
           setMergeDownloadOpen(false);
@@ -169,22 +200,22 @@ export function PdfEditor() {
 
       {/* 메인 레이아웃: 통합 사이드바 + 콘텐츠 영역 */}
       <div className="flex-1 flex flex-row overflow-hidden">
-        {/* 통합 PDF 사이드바 (뷰어 페이지 네비게이션 + 병합 파일 목록) */}
+        {/* 통합 PDF 사이드바 (페이지 단위 썸네일 리스트) */}
         <UnifiedPdfSidebar
-          pdfDoc={pdfDoc}
-          onPageChange={handlePageChange}
-          onMerge={handleMergeSave}
+          onMergeSave={handleMergeSave}
+          onAddPages={handleAddPages}
           isMerging={mergeLoading}
         />
 
         {/* 메인 콘텐츠 영역 */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* 파일 탭 바 (2개 이상일 때만 표시) */}
+          {/* 파일 탭 바 */}
           <PdfFileTabs
             files={viewerFiles}
             activeFileId={activeViewerFileId}
             onSelect={setActiveViewerFileId}
             onClose={closeViewerFile}
+            onOpenFile={handleOpenFile}
           />
 
           {/* 액션 버튼 툴바 */}
@@ -193,17 +224,16 @@ export function PdfEditor() {
             onSplit={handleSplit}
             onCompress={handleCompress}
             onOcr={handleOcr}
-            onAddFile={handleAddFile}
           />
 
-          {/* 병합용 숨겨진 파일 input (툴바 [파일 추가] 버튼용) */}
+          {/* 페이지 추가 숨겨진 파일 input */}
           <input
-            ref={addFileInputRef}
+            ref={addPagesInputRef}
             type="file"
             accept=".pdf,application/pdf"
             multiple
             className="sr-only"
-            onChange={handleAddFileChange}
+            onChange={handleAddPagesChange}
           />
 
           {/* 병합 진행률 */}
@@ -232,7 +262,6 @@ export function PdfEditor() {
                   file={activeFile}
                   fileId={activeViewerFileId ?? undefined}
                   currentPageIndex={currentPageIndex}
-                  onPdfDocLoaded={setPdfDoc}
                 />
               </div>
             ) : (
