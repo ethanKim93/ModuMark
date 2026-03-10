@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "markdown": "Markdown",
+    "pdf": "PDF Tools",
+    "download": "Download"
+  },
+  "landing": {
+    "badge_free": "100% Free",
+    "badge_local": "Local Processing",
+    "badge_ads": "Ad Supported",
+    "hero_title": "Free Markdown Editor\n+ PDF Toolkit",
+    "hero_description": "Use it instantly in your browser. No installation, no sign-up required.",
+    "hero_security": "Your files are never sent to external servers.",
+    "cta_markdown": "Start Writing",
+    "cta_pdf": "Use PDF Tools",
+    "features_title": "Features",
+    "security_title": "Why is ModuMark secure?",
+    "pdf_section_title": "PDF Tasks Made Easy"
+  },
+  "editor": {
+    "open_file": "Open File",
+    "save": "Save",
+    "saving": "Saving...",
+    "export_pdf": "Export PDF",
+    "exporting": "Converting...",
+    "select_tab": "Select a tab."
+  },
+  "pdf": {
+    "merge": "Merge PDF",
+    "split": "Split PDF",
+    "ocr": "Extract Text (OCR)",
+    "compress": "Compress"
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading..."
+  }
+}
