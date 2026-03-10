@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.0 |
+| 문서 버전 | v2.1 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/ROADMAP.md](../ROADMAP.md) · [docs/monetization/PRD.md](./PRD.md) |
-| 상태 | Active (Phase 1 완료) |
+| 상태 | Active (Phase 1 완료, AdSense 승인 완료 및 실제 ID 적용) |
 
 ---
 
@@ -18,7 +18,7 @@
 
 | 기능 | 우선순위 | 완료 여부 |
 |------|---------|---------|
-| AdSense 스크립트 통합 | P0 | ✅ 완료 (`layout.tsx`, `NEXT_PUBLIC_ADSENSE_ID=ca-pub-placeholder`) |
+| AdSense 스크립트 통합 | P0 | ✅ 완료 (`layout.tsx`, `NEXT_PUBLIC_ADSENSE_ID=ca-pub-1815575117157423`) |
 | AdSlot 컴포넌트 | P0 | ✅ 완료 (`components/ads/AdSlot.tsx`) |
 | FloatingAdSlot 컴포넌트 | P0 | ✅ 완료 (`components/ads/FloatingAdSlot.tsx`) |
 | Lazy Loading 적용 | P0 | ✅ 완료 (Intersection Observer) |
@@ -27,6 +27,9 @@
 | 광고 정책 설정 | P1 | AdSense 승인 후 정책 센터에서 설정 예정 |
 | 모바일 광고 숨김 | P1 | ✅ 완료 (375px 미만 SIDEBAR_RIGHT 숨김) |
 | AdSense 승인 콘텐츠 | P1 | ✅ 완료 (/, /security, /privacy, /terms 페이지) |
+| **ads.txt 파일 생성** | **P0** | **✅ 완료 (`public/ads.txt`, 퍼블리셔 인증)** |
+| **google-adsense-account 메타 태그** | **P0** | **✅ 완료 (`layout.tsx` metadata.other)** |
+| **AdSense 실제 ID 교체** | **P0** | **✅ 완료 (`ca-pub-1815575117157423`, `.env.local` 적용)** |
 
 ### 테스트 기준
 
@@ -92,3 +95,4 @@
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v2.0 | 2026-03-08 | Phase 1 완료 체크박스 반영 (AdSlot, FloatingAdSlot, Lazy Loading 등), Phase 2를 2A(광고 최적화)/2B(A/B 테스트)로 분리, AdSense ID 환경변수 명시 | 프로젝트 오너 |
+| v2.1 | 2026-03-10 | AdSense 승인 완료: 실제 ID(`ca-pub-1815575117157423`) 적용, ads.txt·메타 태그 항목 추가 및 완료 처리, 상태 업데이트 | 프로젝트 오너 |

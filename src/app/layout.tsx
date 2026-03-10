@@ -51,6 +51,10 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
     title: "ModuMark",
   },
+  other: {
+    /* AdSense 퍼블리셔 계정 인증 메타 태그 */
+    "google-adsense-account": "ca-pub-1815575117157423",
+  },
 };
 
 export default function RootLayout({

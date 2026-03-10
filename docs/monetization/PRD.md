@@ -3,10 +3,10 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.0 |
+| 문서 버전 | v2.1 |
 | 작성일 | 2026-03-07 |
 | 상위 문서 | [docs/PRD.md](../PRD.md) · [docs/monetization/BRD.md](./BRD.md) |
-| 상태 | Active (Phase 1 완료, AdSense ID 교체 대기) |
+| 상태 | Active (Phase 1 완료, AdSense 승인 완료 - 실제 ID 적용) |
 
 ---
 
@@ -27,7 +27,7 @@
 
 | 기능 ID | 기능 | 설명 |
 |---------|------|------|
-| MN-M1 | AdSense 스크립트 통합 | `layout.tsx`에 AdSense 스크립트 async 로딩 ✅ Phase 1 완료 (`NEXT_PUBLIC_ADSENSE_ID=ca-pub-placeholder`, 승인 후 교체 필요) |
+| MN-M1 | AdSense 스크립트 통합 | `layout.tsx`에 AdSense 스크립트 async 로딩 ✅ Phase 1 완료. ✅ 실제 ID 적용 완료 (`NEXT_PUBLIC_ADSENSE_ID=ca-pub-1815575117157423`) |
 | MN-M2 | 광고 슬롯 컴포넌트 | `<AdSlot />` 재사용 가능 컴포넌트 ✅ Phase 1 완료 (`components/ads/AdSlot.tsx`) |
 | MN-M2-F | FloatingAdSlot 컴포넌트 | 플로팅 광고 슬롯 컴포넌트 ✅ Phase 1 완료 (`components/ads/FloatingAdSlot.tsx`) |
 | MN-M3 | Lazy Loading | 광고 슬롯이 뷰포트 진입 시 로딩 (Intersection Observer API) ✅ Phase 1 완료 |
@@ -88,7 +88,7 @@ export function AdSlot({ adUnitId, position, className }: AdSlotProps) {
   // ...
   return (
     <div className={cn('ad-slot', className)} style={{ minHeight: AD_MIN_HEIGHTS[position] }}>
-      {/* data-ad-client: process.env.NEXT_PUBLIC_ADSENSE_ID (현재 ca-pub-placeholder, AdSense 승인 후 실제 ID로 교체) */}
+      {/* data-ad-client: process.env.NEXT_PUBLIC_ADSENSE_ID (ca-pub-1815575117157423) */}
       <ins className="adsbygoogle" data-ad-client={process.env.NEXT_PUBLIC_ADSENSE_ID} data-ad-slot={adUnitId} />
     </div>
   )
@@ -170,13 +170,16 @@ AdSense 승인을 위한 사전 요건:
 
 | 항목 | 요건 | 상태 |
 |------|------|------|
-| 오리지널 콘텐츠 | 각 공개 페이지에 충분한 오리지널 텍스트 | 소개·가이드 페이지 작성 필요 |
-| 개인정보처리방침 | 별도 페이지로 존재 | 작성 필요 |
-| 이용약관 | 별도 페이지로 존재 | 작성 필요 |
-| 문의 페이지 | 연락처 또는 문의 양식 | 작성 필요 |
-| 서비스 운영 기간 | 최소 3개월 콘텐츠 운영 권장 | 출시 후 진행 |
-| 트래픽 품질 | 봇 트래픽 아닌 실제 사용자 방문 | 출시 후 확인 |
-| 금지 콘텐츠 없음 | 성인, 도박, 저작권 침해 콘텐츠 없음 | 해당 없음 |
+| 오리지널 콘텐츠 | 각 공개 페이지에 충분한 오리지널 텍스트 | ✅ 완료 (/, /security, /privacy, /terms 페이지) |
+| 개인정보처리방침 | 별도 페이지로 존재 | ✅ 완료 (`/privacy` 페이지) |
+| 이용약관 | 별도 페이지로 존재 | ✅ 완료 (`/terms` 페이지) |
+| 문의 페이지 | 연락처 또는 문의 양식 | ✅ 완료 |
+| 서비스 운영 기간 | 최소 3개월 콘텐츠 운영 권장 | ✅ 충족 (AdSense 승인 완료) |
+| 트래픽 품질 | 봇 트래픽 아닌 실제 사용자 방문 | ✅ 충족 (AdSense 승인 완료) |
+| 금지 콘텐츠 없음 | 성인, 도박, 저작권 침해 콘텐츠 없음 | ✅ 해당 없음 |
+| ads.txt | `/ads.txt` 파일로 퍼블리셔 인증 | ✅ 완료 (`public/ads.txt`) |
+| 메타 태그 인증 | `google-adsense-account` 메타 태그 | ✅ 완료 (`layout.tsx` metadata.other) |
+| **승인 결과** | **Google AdSense 최종 승인** | **✅ 승인 완료 (ID: `ca-pub-1815575117157423`)** |
 
 ---
 
@@ -186,3 +189,4 @@ AdSense 승인을 위한 사전 요건:
 |------|------|----------|--------|
 | v1.0 | 2026-03-07 | 초안 작성 | 프로젝트 오너 |
 | v2.0 | 2026-03-08 | Phase 1 완료 반영: MN-M1~M5 완료 표시, FloatingAdSlot 컴포넌트(MN-M2-F) 추가, AdSense ID 환경변수(`ca-pub-placeholder`) 명시, 상태 Active로 변경 | 프로젝트 오너 |
+| v2.1 | 2026-03-10 | AdSense 승인 완료 반영: 실제 퍼블리셔 ID(`ca-pub-1815575117157423`) 적용, 승인 체크리스트 전체 완료 처리, ads.txt·메타 태그 항목 추가, 상태 업데이트 | 프로젝트 오너 |
