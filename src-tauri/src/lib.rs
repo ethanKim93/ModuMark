@@ -96,6 +96,8 @@ pub fn run() {
         )
         // 창 상태(크기·위치·최대화) 저장/복원
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        // 자동 업데이터 (GitHub Releases)
+        .plugin(tauri_plugin_updater::Builder::new().build())
         // 프로세스 재시작 (업데이트 설치 후)
         .plugin(tauri_plugin_process::init())
         // 파일 시스템 플러그인: .md 파일 읽기/쓰기
