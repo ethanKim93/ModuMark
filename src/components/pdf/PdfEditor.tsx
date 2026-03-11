@@ -101,6 +101,9 @@ export function PdfEditor() {
     const selectedFiles = Array.from(e.target.files ?? []);
     for (const file of selectedFiles) {
       const newFileItem = { id: crypto.randomUUID(), file };
+      // files 배열에 먼저 등록해야 병합 시 fileId로 올바른 파일을 찾을 수 있음
+      const { files: currentFiles } = usePdfFileStore.getState();
+      usePdfFileStore.setState({ files: [...currentFiles, newFileItem] });
       await extractPages(newFileItem).catch(() => {
         // 개별 파일 추출 실패 무시
       });
