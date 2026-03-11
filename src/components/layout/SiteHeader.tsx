@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/', label: '홈' },
   { href: '/markdown', label: '마크다운' },
   { href: '/pdf', label: 'PDF' },
+  { href: '/download', label: '다운로드' },
   { href: '/about', label: 'About' },
 ];
 

@@ -7,7 +7,7 @@
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "TAURI_ENV_TARGET_TRIPLE=x86_64-pc-windows-msvc npm run build"
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
@@ -61,16 +61,6 @@
     ]
   },
   "plugins": {
-    "updater": {
-      "pubkey": "",
-      "endpoints": [
-        "https://github.com/modumark/modumark/releases/latest/download/latest.json"
-      ],
-      "dialog": false,
-      "headers": {
-        "Authorization": ""
-      }
-    },
     "fs": {
       "requireLiteralLeadingDot": false
     }

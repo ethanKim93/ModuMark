@@ -71,7 +71,7 @@ export default function Home() {
               브라우저에서 즉시 사용하세요. 설치 불필요, 회원가입 불필요.
               <strong className="text-foreground"> 파일은 절대 외부 서버로 전송되지 않습니다.</strong>
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 href="/markdown"
                 className="px-6 py-3 bg-primary text-primary-foreground rounded-lg text-base font-medium hover:bg-primary/90 transition-colors"
@@ -83,6 +83,12 @@ export default function Home() {
                 className="px-6 py-3 bg-surface border border-border text-foreground rounded-lg text-base font-medium hover:bg-surface-secondary transition-colors"
               >
                 PDF 도구 사용
+              </Link>
+              <Link
+                href="/download"
+                className="px-6 py-3 bg-surface border border-border text-foreground rounded-lg text-base font-medium hover:bg-surface-secondary transition-colors"
+              >
+                데스크탑 앱 다운로드
               </Link>
             </div>
           </section>

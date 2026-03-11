@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-const GITHUB_RELEASES_URL = 'https://github.com/modumark/modumark/releases/latest';
+const GITHUB_RELEASES_URL = 'https://github.com/ethanKim93/ModuMark/releases/latest';
 
 const features = [
   {
