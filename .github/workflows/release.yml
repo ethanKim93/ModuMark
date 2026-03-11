@@ -38,24 +38,7 @@ jobs:
       - name: npm 의존성 설치
         run: npm ci
 
-      - name: Windows 코드 서명 인증서 설정
-        if: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
-        shell: pwsh
-        run: |
-          $certBytes = [System.Convert]::FromBase64String("${{ secrets.WINDOWS_CERTIFICATE }}")
-          $certPath = "$env:RUNNER_TEMP\certificate.pfx"
-          [System.IO.File]::WriteAllBytes($certPath, $certBytes)
-          echo "WINDOWS_CERT_PATH=$certPath" >> $env:GITHUB_ENV
-
       - name: Tauri 앱 빌드 (Windows)
-        env:
-          TAURI_ENV_TARGET_TRIPLE: x86_64-pc-windows-msvc
-          # Tauri 업데이터 서명 키 (GitHub Secrets 등록 필요)
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          # Windows Authenticode 서명 (PFX 인증서 - GitHub Secrets: WINDOWS_CERTIFICATE, WINDOWS_CERTIFICATE_PASSWORD)
-          WINDOWS_CERTIFICATE_PATH: ${{ env.WINDOWS_CERT_PATH }}
-          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         run: npm run tauri build -- --target x86_64-pc-windows-msvc
 
       - name: GitHub Releases 파일 업로드
