@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '릴리즈 태그 (예: v0.1.0)'
+        required: true
+        default: 'v0.1.0'
 
 jobs:
   build-windows:
@@ -49,6 +55,7 @@ jobs:
       - name: GitHub Releases 파일 업로드
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           files: |
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
             src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
