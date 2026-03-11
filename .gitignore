@@ -29,3 +29,4 @@ npm-debug.log*
 
 # 테스트 커버리지
 coverage/
+mcp-shrimp-task-manager/
