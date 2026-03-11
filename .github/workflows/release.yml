@@ -35,6 +35,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: npm 최신 버전 설치
+        run: npm install -g npm@latest
+
       - name: npm 의존성 설치
         run: npm ci
 
