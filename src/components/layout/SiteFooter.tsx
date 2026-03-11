@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { CookieResetButton } from '@/components/common/CookieResetButton';
 
 const toolLinks = [
   { href: '/markdown', label: '마크다운 에디터' },
@@ -16,7 +17,7 @@ const legalLinks = [
 
 const infoLinks = [
   { href: '/about', label: 'About' },
-  { href: '/guide', label: '가이드' },
+  { href: '/contact', label: '문의하기' },
   { href: '/download', label: '데스크탑 앱' },
 ];
 
@@ -81,6 +82,19 @@ export function SiteFooter() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <CookieResetButton />
+              </li>
+              <li>
+                <a
+                  href="https://policies.google.com/technologies/partner-sites"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[12px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Google 데이터 사용 방식
+                </a>
+              </li>
             </ul>
           </div>
         </div>

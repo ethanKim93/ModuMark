@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { TauriFileOpenProvider } from "@/components/providers/TauriFileOpenProvider";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
+import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     url: "https://modumark.app",
     siteName: "ModuMark",
-    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "ModuMark" }],
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "ModuMark - 무료 마크다운 편집기 + PDF 도구" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -72,14 +72,9 @@ export default function RootLayout({
           <TauriFileOpenProvider />
           {children}
           <CookieConsentBanner />
+          {/* AdSense: 쿠키 동의 여부 확인 후 조건부 로드 */}
+          <AdSenseScript />
         </ThemeProvider>
-        {/* Google AdSense — lazyOnload: 페이지 로드 완료 후 로드 */}
-        <Script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_ID}`}
-          crossOrigin="anonymous"
-          strategy="lazyOnload"
-        />
       </body>
     </html>
   );

@@ -23,6 +23,7 @@ export function CookieConsentBanner() {
   const handleAccept = () => {
     try {
       localStorage.setItem(CONSENT_KEY, 'accepted');
+      window.dispatchEvent(new Event('cookie-consent-changed'));
     } catch { /* 무시 */ }
     setVisible(false);
   };
@@ -30,6 +31,7 @@ export function CookieConsentBanner() {
   const handleDecline = () => {
     try {
       localStorage.setItem(CONSENT_KEY, 'rejected');
+      window.dispatchEvent(new Event('cookie-consent-changed'));
     } catch { /* 무시 */ }
     setVisible(false);
   };
@@ -44,11 +46,12 @@ export function CookieConsentBanner() {
     >
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
         <p className="text-[13px] text-muted-foreground leading-relaxed flex-1">
-          ModuMark는 더 나은 서비스를 위해 쿠키를 사용합니다.{' '}
+          ModuMark는 Google AdSense를 통해 개인화 광고를 표시하기 위해 쿠키를 사용합니다.
+          동의하지 않으면 광고가 표시되지 않습니다.{' '}
           <Link href="/privacy" className="text-primary hover:underline">
             개인정보처리방침
           </Link>
-          을 참조하세요. 사용자 파일은 어떤 서버로도 전송되지 않습니다.
+          을 참조하세요.
         </p>
         <div className="flex gap-2 shrink-0">
           <button
