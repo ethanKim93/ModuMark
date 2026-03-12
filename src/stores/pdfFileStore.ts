@@ -271,7 +271,14 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
   },
 
   addPages: (newPages) =>
-    set((s) => ({ pages: [...s.pages, ...newPages] })),
+    set((s) => {
+      const updatedPages = [...s.pages, ...newPages];
+      return {
+        pages: updatedPages,
+        // activePageId가 없으면 첫 번째 페이지를 자동 선택 (초기 로드 시 사이드바 하이라이트)
+        activePageId: s.activePageId ?? updatedPages[0]?.id ?? null,
+      };
+    }),
 
   removePage: (pageId) =>
     set((s) => {
@@ -385,7 +392,17 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
       return { selectedPageIds: newSelected };
     }),
 
-  setCurrentPage: (index) => set({ currentPageIndex: index }),
+  setCurrentPage: (index) => set((s) => {
+    // 현재 activeFile과 동일 파일의 해당 pageIndex 페이지 찾아 activePageId 동기화
+    const matchingPage = s.pages.find((p) => {
+      const fileItem = s.files.find((f) => f.id === p.fileId);
+      return fileItem?.file.name === s.activeFile?.name && p.pageIndex === index;
+    });
+    return {
+      currentPageIndex: index,
+      activePageId: matchingPage?.id ?? s.activePageId,
+    };
+  }),
 
   setSidebarWidth: (width) =>
     set({ sidebarWidth: Math.min(400, Math.max(200, width)) }),
