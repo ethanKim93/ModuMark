@@ -148,6 +148,8 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
       pages: [],
       files: [],
       selectedPageIds: new Set<string>(),
+      activePageId: null,
+      currentPageIndex: 0,
       // 이전 탭 스냅샷 보존
       tabPages: newTabPages,
       tabFiles: newTabFiles,
@@ -393,11 +395,10 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
     }),
 
   setCurrentPage: (index) => set((s) => {
-    // 현재 activeFile과 동일 파일의 해당 pageIndex 페이지 찾아 activePageId 동기화
-    const matchingPage = s.pages.find((p) => {
-      const fileItem = s.files.find((f) => f.id === p.fileId);
-      return fileItem?.file.name === s.activeFile?.name && p.pageIndex === index;
-    });
+    // p.fileName으로 직접 비교 (files 배열에 등록되지 않은 뷰어 전용 파일도 매칭)
+    const matchingPage = s.pages.find(
+      (p) => p.fileName === s.activeFile?.name && p.pageIndex === index,
+    );
     return {
       currentPageIndex: index,
       activePageId: matchingPage?.id ?? s.activePageId,
