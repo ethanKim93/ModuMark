@@ -19,7 +19,8 @@
       "Skill(domain-tasks-create)",
       "Skill(domain-tasks-run)",
       "Skill(requirements)",
-      "Skill(domain-tasks:run)"
+      "Skill(domain-tasks:run)",
+      "Skill(release)"
     ]
   }
 }

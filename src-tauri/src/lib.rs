@@ -52,17 +52,23 @@ pub fn run() {
             tauri_plugin_single_instance::Builder::new()
                 .callback(|app, argv, _cwd| {
                     let args: Vec<String> = argv.iter().skip(1).cloned().collect();
+                    println!("[ModuMark] single-instance 콜백 인자: {:?}", args);
 
                     // MD 파일: std::fs로 직접 읽기 (FS Scope 제한 우회)
                     let md_files: Vec<MdFileData> = args
                         .iter()
                         .filter(|arg| arg.ends_with(".md") || arg.ends_with(".markdown"))
                         .filter_map(|path| {
+                            if !std::path::Path::new(path.as_str()).exists() {
+                                println!("[ModuMark] single-instance MD 파일 없음, 스킵: {}", path);
+                                return None;
+                            }
                             let content = std::fs::read_to_string(path).ok()?;
                             let name = std::path::Path::new(path)
                                 .file_name()?
                                 .to_string_lossy()
                                 .into_owned();
+                            println!("[ModuMark] single-instance MD 파일 읽기 성공: {}", name);
                             Some(MdFileData { name, content })
                         })
                         .collect();
@@ -72,11 +78,16 @@ pub fn run() {
                         .iter()
                         .filter(|arg| arg.ends_with(".pdf"))
                         .filter_map(|path| {
+                            if !std::path::Path::new(path.as_str()).exists() {
+                                println!("[ModuMark] single-instance PDF 파일 없음, 스킵: {}", path);
+                                return None;
+                            }
                             let bytes = std::fs::read(path).ok()?;
                             let name = std::path::Path::new(path)
                                 .file_name()?
                                 .to_string_lossy()
                                 .into_owned();
+                            println!("[ModuMark] single-instance PDF 파일 읽기 성공: {}", name);
                             Some(PdfFileData { name, bytes })
                         })
                         .collect();
@@ -111,16 +122,23 @@ pub fn run() {
         .setup(|app| {
             // CLI 인자에서 파일 경로 파싱 → std::fs로 직접 읽기
             let args: Vec<String> = std::env::args().skip(1).collect();
+            println!("[ModuMark] setup CLI 인자: {:?}", args);
 
             let md_files: Vec<MdFileData> = args
                 .iter()
                 .filter(|arg| arg.ends_with(".md") || arg.ends_with(".markdown"))
                 .filter_map(|path| {
+                    // 경로 존재 여부 사전 검증
+                    if !std::path::Path::new(path.as_str()).exists() {
+                        println!("[ModuMark] MD 파일 없음, 스킵: {}", path);
+                        return None;
+                    }
                     let content = std::fs::read_to_string(path).ok()?;
                     let name = std::path::Path::new(path)
                         .file_name()?
                         .to_string_lossy()
                         .into_owned();
+                    println!("[ModuMark] MD 파일 읽기 성공: {}", name);
                     Some(MdFileData { name, content })
                 })
                 .collect();
@@ -129,14 +147,26 @@ pub fn run() {
                 .iter()
                 .filter(|arg| arg.ends_with(".pdf"))
                 .filter_map(|path| {
+                    // 경로 존재 여부 사전 검증
+                    if !std::path::Path::new(path.as_str()).exists() {
+                        println!("[ModuMark] PDF 파일 없음, 스킵: {}", path);
+                        return None;
+                    }
                     let bytes = std::fs::read(path).ok()?;
                     let name = std::path::Path::new(path)
                         .file_name()?
                         .to_string_lossy()
                         .into_owned();
+                    println!("[ModuMark] PDF 파일 읽기 성공: {}", name);
                     Some(PdfFileData { name, bytes })
                 })
                 .collect();
+
+            println!(
+                "[ModuMark] 초기 파일 파싱 완료: md={}, pdf={}",
+                md_files.len(),
+                pdf_files.len()
+            );
 
             // 읽은 파일 내용을 앱 상태로 저장
             // 프론트엔드가 마운트 후 invoke('get_initial_files')로 가져감

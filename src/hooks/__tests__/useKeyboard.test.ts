@@ -23,6 +23,8 @@ vi.mock('@/stores/tabStore', () => ({
       setDirty: mockSetDirty,
       switchTab: vi.fn(),
       updateContent: vi.fn(),
+      isOpenedFromFileAssociation: false,
+      setOpenedFromFileAssociation: vi.fn(),
     })),
   },
 }));
@@ -49,6 +51,8 @@ describe('useKeyboard 단축키 로직', () => {
       setDirty: mockSetDirty,
       switchTab: vi.fn(),
       updateContent: vi.fn(),
+      isOpenedFromFileAssociation: false,
+      setOpenedFromFileAssociation: vi.fn(),
     });
   });
 
@@ -108,6 +112,8 @@ describe('useKeyboard 단축키 로직', () => {
       getActiveTab: mockGetActiveTab,
       setFileHandle: mockSetFileHandle,
       setDirty: mockSetDirty,
+      isOpenedFromFileAssociation: false,
+      setOpenedFromFileAssociation: vi.fn(),
       switchTab: vi.fn(),
       updateContent: vi.fn(),
     });

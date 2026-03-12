@@ -62,6 +62,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | requirements | `.claude/skills/requirements/SKILL.md` | 요구사항 → DDD 도메인 분리 → BRD·PRD·ROADMAP 자동 체이닝 |
 | domain-tasks:create | `.claude/skills/domain-tasks/create/SKILL.md` | ROADMAP Phase 태스크 정의 → shrimp-task-manager 태스크 일괄 생성 |
 | domain-tasks:run | `.claude/skills/domain-tasks/run/SKILL.md` | 도메인별 pending 태스크 순차 실행·검증 |
+| domain-tasks:auto | `.claude/skills/domain-tasks/auto/SKILL.md` | 도메인의 모든 Phase를 create → run 순서로 자동 체이닝 완주 |
+| release | `.claude/skills/release/SKILL.md` | 버전 bump + 태그 생성 + 커밋 + 푸시 한번에 처리 |
 
 ## 문서 구조
 

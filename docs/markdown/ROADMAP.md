@@ -3,8 +3,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v3.0 |
-| 작성일 | 2026-03-10 |
+| 문서 버전 | v3.1 |
+| 작성일 | 2026-03-13 |
 | 상위 문서 | [docs/README.md](../README.md) · [docs/markdown/PRD.md](./PRD.md) |
 | 상태 | Active (Phase 1 완료) |
 
@@ -67,7 +67,7 @@
 | - | **Cloud Sync Disabled - Learn More 링크** | P2 | 배지에 보안 안내 페이지 링크 추가. ED-S9, PROPOSAL-006 |
 | E2-6 | 에디터 입력 영역 시각적 구분 | P1 | 콘텐츠 영역 배경색·테두리·그림자 적용 (종이 느낌). 다크/라이트 모드 대응. ED-S10 |
 | E2-7 | PDF 내보내기 파일명/경로 선택 | P1 | DownloadDialog + showSaveFilePicker 연동. 미지원 브라우저 폴백. ED-S11 |
-| - | Mermaid 다이어그램 | P3 | Milkdown Mermaid 플러그인 |
+| E2-8 | Mermaid 다이어그램 렌더링 | P2 | ```mermaid 코드 블록 SVG 렌더링. 커스텀 Milkdown 플러그인 (공식 deprecated 대신 직접 구현). 다크/라이트 테마 연동. ED-C1 |
 | - | 찾기·바꾸기 | P3 | Ctrl+F |
 
 ### 테스트 기준
@@ -79,6 +79,8 @@
 | **통합 테스트** | 키보드 단축키: Ctrl+S 저장, Ctrl+T 새 탭, Ctrl+W 탭 닫기 | 각 단축키 동작 확인 |
 | **E2E 테스트** | 편집 → Undo 반복 → 저장 → 재열기 내용 확인 | 저장 시점 내용이 재열기 후에도 동일 |
 | **단위 테스트** | 스토리지 한도 계산: IndexedDB 사용량 50MB 초과 시 경고 상태 반환 | 49MB: 정상, 51MB: 경고 상태 반환 확인 |
+| **단위 테스트** | Mermaid 플러그인: mermaid 코드 블록 AST 노드 감지 → SVG 변환 로직 | flowchart TD 입력 시 유효한 SVG 반환 확인 |
+| **E2E 테스트** | Mermaid 렌더링: ```mermaid 코드 블록 입력 → SVG 다이어그램 표시 | flowchart, sequenceDiagram 입력 후 SVG 요소 DOM에 존재 확인 |
 
 ### Phase 2 태스크 정의 (shrimp-task-manager용)
 
@@ -90,6 +92,11 @@
 | E2-5 | 웹 스토리지 한도 경고 | ED-S8 | Phase 1 완료 | IndexedDB 50MB 초과 시 경고 배지 표시 확인 |
 | E2-6 | 에디터 입력 영역 시각적 구분 | ED-S10 | Phase 1 완료 | 다크/라이트 모드에서 콘텐츠 영역 시각적 구분 확인 |
 | E2-7 | PDF 내보내기 파일명/경로 선택 | ED-S11 | Phase 1 완료 | DownloadDialog 파일명 입력 + showSaveFilePicker 동작 확인 |
+| E2-8-1 | mermaid 패키지 설치 및 dynamic import 설정 | ED-C1 | Phase 1 완료 | npm install mermaid 후 dynamic import 패턴 적용, SSR 비호환 처리 확인 |
+| E2-8-2 | 커스텀 Milkdown Mermaid 플러그인 개발 | ED-C1 | E2-8-1 완료 | ```mermaid 코드 블록 감지 → SVG 렌더링 동작. flowchart/sequenceDiagram/classDiagram/erDiagram/gantt 5종 렌더링 확인 |
+| E2-8-3 | 다크/라이트 테마 Mermaid 연동 | ED-C1 | E2-8-2 완료 | 테마 전환 시 Mermaid SVG 색상 자동 변경 확인 (dark theme: dark, light theme: default) |
+| E2-8-4 | globals.css Mermaid SVG 스타일링 | ED-C1 | E2-8-2 완료 | Mermaid SVG가 에디터 레이아웃 내에서 올바르게 표시, 반응형 대응 확인 |
+| E2-8-5 | Mermaid 단위 테스트 및 E2E 테스트 | ED-C1 | E2-8-2, E2-8-3, E2-8-4 완료 | flowchart 렌더링 단위 테스트 통과. E2E: mermaid 코드 블록 입력 → SVG 렌더링 확인 |
 
 ---
 
@@ -150,3 +157,4 @@
 | v2.0 | 2026-03-08 | Phase 1 완료 반영 (완료 기준 체크박스 전체 체크, 테마 전환 선행 구현 기록). Phase 2를 2A (웹) / 2B (Tauri 전용) 로 분리. 상태 Active로 변경 | 프로젝트 오너 |
 | v2.1 | 2026-03-09 | E2-6 (에디터 입력 영역 시각적 구분), E2-7 (PDF 내보내기 파일명/경로 선택) Phase 2A 추가. Phase 2A 태스크 정의 블록 추가. 상위 문서 링크 변경 | 프로젝트 오너 |
 | v3.0 | 2026-03-10 | Phase 번호 체계 변경: 서브 Phase(A/B) → 순차 번호. Phase 2A→2, 2B→3, 3→4로 재매핑. 도메인명 Editor→Markdown으로 변경. Phase 3 태스크 정의(E3-1) 추가. 의존성 참조 업데이트 | 프로젝트 오너 |
+| v3.1 | 2026-03-13 | E2-8 Mermaid 다이어그램 렌더링 Phase 2에 추가 (P3→P2 상향). E2-8-1~E2-8-5 태스크 정의 추가. Mermaid 테스트 기준 추가 | 프로젝트 오너 |

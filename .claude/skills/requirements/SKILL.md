@@ -2,8 +2,9 @@
 name: requirements
 description: |
   요구사항을 입력받아 DDD 도메인 분리 후 도메인별 BRD → PRD → ROADMAP을 자동 체이닝합니다.
+  --auto 옵션 사용 시 ROADMAP 완료 후 domain-tasks:auto까지 자동 실행합니다.
   예: /requirements "OCR 기능 추가해줘"
-  예: /requirements "PDF 압축과 워터마크 기능 추가"
+  예: /requirements "PDF 압축과 워터마크 기능 추가" --auto
 allowed-tools:
   - Read
   - Write
@@ -21,6 +22,10 @@ allowed-tools:
   - mcp__shrimp-task-manager__split_tasks
   - mcp__shrimp-task-manager__list_tasks
   - mcp__shrimp-task-manager__clear_all_tasks
+  - mcp__shrimp-task-manager__execute_task
+  - mcp__shrimp-task-manager__verify_task
+  - mcp__shrimp-task-manager__get_task_detail
+  - mcp__shrimp-task-manager__query_task
 ---
 
 # /requirements 스킬
@@ -30,15 +35,17 @@ allowed-tools:
 ## 사용법
 
 ```
-/requirements "<요구사항 텍스트>"
+/requirements "<요구사항 텍스트>" [--auto]
 ```
 
 ### 예시
 ```
 /requirements "OCR 기능 추가해줘"
 /requirements "PDF 압축과 워터마크 기능 추가"
-/requirements "사용자 인증 및 클라우드 저장 기능 필요"
+/requirements "사용자 인증 및 클라우드 저장 기능 필요" --auto
 ```
+
+`--auto` 옵션: BRD → PRD → ROADMAP 완료 후 사용자 확인 없이 `domain-tasks:auto`까지 자동 실행
 
 ---
 
@@ -46,13 +53,16 @@ allowed-tools:
 
 ### Step 0: 인자 파싱
 
-`args`에서 요구사항 텍스트를 추출한다.
+`args`에서 요구사항 텍스트와 옵션 플래그를 추출한다.
 
-- `args`가 비어 있으면 아래 메시지를 출력하고 종료:
+- `--auto` 플래그 여부를 먼저 확인한다 (`autoMode = args.includes('--auto')`)
+- 요구사항 텍스트는 `--auto`를 제거한 나머지 문자열이다
+- 요구사항 텍스트가 비어 있으면 아래 메시지를 출력하고 종료:
   ```
   오류: 요구사항을 입력해주세요.
-  사용법: /requirements "<요구사항 텍스트>"
+  사용법: /requirements "<요구사항 텍스트>" [--auto]
   예시: /requirements "OCR 기능 추가해줘"
+       /requirements "PDF 압축 기능 추가" --auto
   ```
 
 ---
@@ -164,14 +174,14 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 
 ---
 
-### Step 4: 결과 요약 및 사용자 확인
+### Step 4: 결과 요약 및 분기 처리
 
 모든 도메인 처리가 완료되면 아래 형식으로 결과를 출력한다:
 
 ```
 ## /requirements 실행 완료
 
-**요구사항**: {args}
+**요구사항**: {요구사항 텍스트}
 
 ### 처리된 도메인
 
@@ -186,7 +196,11 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 
 새 도메인이 추가된 경우 `docs/README.md`의 도메인 인덱스도 업데이트한다.
 
-**⚠️ 여기서 반드시 멈추고 사용자에게 아래 질문을 한다:**
+---
+
+#### 분기: `autoMode` 여부에 따라 다르게 처리
+
+**`autoMode = false` (기본)**: 여기서 멈추고 사용자에게 아래 질문을 한다:
 
 ```
 태스크를 생성하시겠습니까?
@@ -196,12 +210,39 @@ ddd-architect의 JSON 출력을 파싱하여 도메인 목록을 추출한다.
 - `/domain-tasks:create {domain2} {phase}` → {domain2} Phase {phase} 태스크 생성
 ```
 
+**`autoMode = true` (`--auto` 플래그 있음)**: 사용자 확인 없이 Step 5로 즉시 진행한다.
+
 ---
 
-### Step 5: 사용자 응답 처리
+### Step 5: 태스크 자동 실행 (--auto 전용)
 
-- 사용자가 **승인**하면(예/오케이/yes 등) → 해당 `/domain-tasks:create` 스킬을 호출한다
-- 사용자가 **거절**하면(아니오/no 등) → 종료한다
+`autoMode = false`이면 이 단계는 실행하지 않는다.
+
+`autoMode = true`이면:
+
+1. 식별된 도메인 목록을 순서대로 순회한다 (도메인이 여러 개면 **순차** 실행)
+2. 각 도메인에 대해 `domain-tasks:auto` 스킬 로직을 그대로 수행한다:
+   - `docs/{domain}/ROADMAP.md`에서 Phase 목록 추출
+   - 첫 Phase: `updateMode: "clearAllTasks"`로 태스크 생성
+   - 이후 Phase: `updateMode: "append"`로 태스크 생성
+   - 각 Phase의 태스크를 의존성 순서대로 실행 → 검증 반복
+   - 모든 Phase 완료 시 다음 도메인으로 이동
+3. 모든 도메인 완료 후 최종 보고 출력:
+
+```
+## /requirements --auto 전체 완료
+
+**요구사항**: {요구사항 텍스트}
+
+| 도메인 | 처리된 Phase | 완료 태스크 수 |
+|--------|------------|--------------|
+| {domain1} | Phase 1, 2A | N개 |
+| {domain2} | Phase 1 | N개 |
+```
+
+`autoMode = false`이고 사용자가 Step 4에서:
+- **승인**하면(예/오케이/yes 등) → 해당 `/domain-tasks:create` 스킬을 호출한다
+- **거절**하면(아니오/no 등) → 종료한다
 - **절대로 사용자 확인 없이 태스크 생성이나 코드 구현으로 넘어가지 않는다**
 
 ---

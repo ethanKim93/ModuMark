@@ -22,6 +22,9 @@ export function useSessionRestore() {
       const store = useTabStore.getState();
       const currentTabs = store.tabs;
 
+      // 파일 연결로 열린 경우 세션 복원 스킵 (경쟁 조건 방지)
+      if (store.isOpenedFromFileAssociation) return;
+
       // 기본 탭(Untitled, 빈 콘텐츠)만 있을 때만 복원
       const isDefaultState =
         currentTabs.length === 1 &&

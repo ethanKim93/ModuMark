@@ -3,8 +3,8 @@
 
 | 항목 | 내용 |
 |------|------|
-| 문서 버전 | v2.1 |
-| 작성일 | 2026-03-09 |
+| 문서 버전 | v2.2 |
+| 작성일 | 2026-03-13 |
 | 상위 문서 | [docs/README.md](../README.md) · [docs/editor/BRD.md](./BRD.md) |
 | 상태 | Active (Phase 1 완료) |
 
@@ -55,6 +55,7 @@
 | Zustand | 5.0.11 | |
 | @milkdown/kit + @milkdown/react + @milkdown/theme-nord | 7.19.0 | `nord` 테마는 `.config(nord)`로 적용 |
 | next-themes | 최신 | 다크/라이트/시스템 테마 전환. `attribute="class"`, `defaultTheme="dark"` |
+| mermaid | 최신 (dynamic import) | ` ```mermaid ` 블록 SVG 렌더링. 번들 크기 ~1.5MB → dynamic import 필수. SSR 비호환 → 기존 Loader 패턴과 동일하게 적용 |
 
 ---
 
@@ -90,9 +91,11 @@
 
 ### Could Have
 
+> **ED-C1 우선순위 상향**: Mermaid는 기술 문서 작성의 핵심 기능으로, GitHub README·아키텍처 문서·API 문서에서 필수적으로 사용됨. 경쟁 도구 대비 차별화 요소로 P3 → P2로 상향.
+
 | 기능 ID | 기능 | 설명 |
 |---------|------|------|
-| ED-C1 | Mermaid 다이어그램 | Phase 2 검토 |
+| ED-C1 | Mermaid 다이어그램 렌더링 | ` ```mermaid ` 코드 블록을 SVG로 렌더링. 커스텀 Milkdown 플러그인 기반 (공식 `@milkdown/plugin-diagram` deprecated로 직접 구현). 다크/라이트 테마 자동 연동. dynamic import로 초기 로드 영향 최소화. Phase 2 구현 |
 | ED-C2 | 수식(LaTeX) 렌더링 | Phase 3 검토 |
 | ED-C3 | 폴더·파일 트리 사이드바 | Phase 2 검토 |
 | ED-C4 | 찾기·바꾸기 | Ctrl+F, Phase 2 |
@@ -109,6 +112,7 @@
 | US-ED-01 | 나는 개발자로서 GitHub README를 빠르게 작성하고 싶다. WYSIWYG 편집기에서 코드 블록을 쉽게 삽입할 수 있어야 한다 | ` ``` ` 입력 시 코드 블록으로 변환됨. 언어 선택 드롭다운 표시. 복사 버튼 제공 |
 | US-ED-02 | 나는 여러 문서를 동시에 편집하고 싶다. 각 파일이 탭으로 열려 빠르게 전환 가능해야 한다 | 최대 N개 탭 동시 유지. Ctrl+Tab으로 탭 전환 가능 |
 | US-ED-03 | 나는 기존 .md 파일을 Typora처럼 더블클릭으로 바로 열고 싶다 | Windows에서 .md 파일 더블클릭 시 ModuMark 자동 실행 및 해당 파일이 탭으로 열림 |
+| US-ED-07 | 나는 개발자로서 아키텍처 다이어그램이나 플로우차트를 마크다운 문서에 포함하고 싶다. ` ```mermaid ` 코드 블록을 작성하면 에디터에서 바로 SVG 다이어그램으로 렌더링되어야 한다 | ` ```mermaid``` ` 코드 블록 입력 시 SVG 다이어그램 렌더링. flowchart, sequenceDiagram, classDiagram, erDiagram, gantt 5종 지원. 다크/라이트 테마 전환 시 다이어그램 색상 자동 변경 |
 
 ### 이수진 (학생)
 
@@ -240,3 +244,4 @@ interface Tab {
 | v1.1 | 2026-03-07 | PROPOSAL-005 채택: ED-S7 (세션 백업), ED-S8 (웹 스토리지 한도) Should Have 추가. PROPOSAL-006 채택: ED-S9 (Learn More 링크) 추가 | 프로젝트 오너 |
 | v2.0 | 2026-03-08 | Phase 1 완료 반영. 기술 스택 실제 버전 수정 (Next.js 16.1.6, shadcn/ui v4 + @base-ui/react, Tailwind CSS v4 CSS-first). 1.3 실제 구현 기술 스택 섹션 추가. 상태 Active로 변경 | 프로젝트 오너 |
 | v2.1 | 2026-03-09 | ED-S10 (에디터 입력 영역 시각적 구분), ED-S11 (PDF 내보내기 파일명/경로 선택) Should Have 추가. 상위 문서 링크 변경 | 프로젝트 오너 |
+| v2.2 | 2026-03-13 | ED-C1 Mermaid 다이어그램 상세 명세 추가 (P3→P2 상향, 커스텀 플러그인 방향). US-ED-07 사용자 스토리 추가. mermaid dynamic import 기술 스택 추가 | 프로젝트 오너 |

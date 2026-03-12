@@ -11,6 +11,8 @@ export interface Tab {
 interface TabStore {
   tabs: Tab[];
   activeTabId: string | null;
+  /** 파일 연결(더블클릭)로 열린 경우 true → 세션 복원 스킵 */
+  isOpenedFromFileAssociation: boolean;
   openTab: (tab: Omit<Tab, 'id'>) => string;
   closeTab: (id: string) => void;
   switchTab: (id: string) => void;
@@ -18,6 +20,7 @@ interface TabStore {
   setDirty: (id: string, isDirty: boolean) => void;
   setFileHandle: (id: string, handle: FileSystemFileHandle, title: string) => void;
   getActiveTab: () => Tab | undefined;
+  setOpenedFromFileAssociation: (value: boolean) => void;
 }
 
 const DEFAULT_TAB: Tab = {
@@ -30,6 +33,7 @@ const DEFAULT_TAB: Tab = {
 export const useTabStore = create<TabStore>((set, get) => ({
   tabs: [DEFAULT_TAB],
   activeTabId: 'default',
+  isOpenedFromFileAssociation: false,
 
   openTab: (tabData) => {
     /* 동일 fileHandle이 이미 열려 있으면 해당 탭으로 전환 */
@@ -85,4 +89,6 @@ export const useTabStore = create<TabStore>((set, get) => ({
     const { tabs, activeTabId } = get();
     return tabs.find((t) => t.id === activeTabId);
   },
+
+  setOpenedFromFileAssociation: (value) => set({ isOpenedFromFileAssociation: value }),
 }));
