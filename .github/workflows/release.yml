@@ -7,9 +7,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: '릴리즈 태그 (예: v0.1.0)'
+        description: '릴리즈 태그 (예: v0.2.2)'
         required: true
-        default: 'v0.1.0'
+        default: 'v0.2.2'
 
 jobs:
   build-windows:
@@ -49,21 +49,17 @@ jobs:
       - name: npm 의존성 설치
         run: npm ci
 
-      - name: Tauri 앱 빌드 (Windows)
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: npm run tauri build -- --target x86_64-pc-windows-msvc
-
-      - name: GitHub Releases 파일 업로드
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-          files: |
-            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
-            src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
-          generate_release_notes: true
-          draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
+      # tauri-action이 빌드 + 릴리즈 + latest.json 업로드를 모두 처리
+      - name: Tauri 앱 빌드 및 릴리즈
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          releaseName: 'ModuMark ${{ github.event_name == ''workflow_dispatch'' && inputs.tag || github.ref_name }}'
+          releaseBody: '이 버전의 설치 파일은 아래 Assets에서 다운로드하세요.'
+          releaseDraft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          args: --target x86_64-pc-windows-msvc
