@@ -197,13 +197,16 @@ export function PdfThumbnailList() {
     const pageItem = pages.find((p) => p.id === id);
     if (!pageItem) return;
 
-    // 현재 activeFile과 동일한 파일의 페이지인 경우에만 뷰어 페이지 이동
-    // 다른 파일의 pageIndex를 현재 뷰어에 적용하면 잘못된 페이지가 표시됨
-    const { files: storeFiles, activeFile } = usePdfFileStore.getState();
-    const pageFile = storeFiles.find((f) => f.id === pageItem.fileId);
-    if (pageFile && activeFile && pageFile.file.name === activeFile.name) {
-      setCurrentPage(pageItem.pageIndex);
+    const { activeFile, files, setActiveFileAndPage } = usePdfFileStore.getState();
+    if (activeFile && pageItem.fileName !== activeFile.name) {
+      // 다른 파일 페이지: 파일+페이지+viewerStates 원자적 전환 (savedPage 오염 방지)
+      const fileItem = files.find((f) => f.id === pageItem.fileId);
+      if (fileItem) {
+        setActiveFileAndPage(fileItem.file, pageItem.pageIndex, pageItem.id);
+        return;
+      }
     }
+    setCurrentPage(pageItem.pageIndex);
 
     // data-page-id 속성으로 메인 뷰어 해당 페이지 직접 스크롤
     const el = document.querySelector(`[data-page-id="${id}"]`);

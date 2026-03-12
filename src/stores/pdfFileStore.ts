@@ -93,6 +93,11 @@ interface PdfFileStore {
   selectPageRange: (startId: string, endId: string) => void;
   /** 사이드바 현재 페이지 설정 */
   setCurrentPage: (index: number) => void;
+  /**
+   * 탭 관리 없이 파일+페이지를 원자적으로 전환 (추가된 파일 페이지 미리보기용).
+   * viewerStates도 미리 갱신해 PdfViewer savedPage 오염 방지.
+   */
+  setActiveFileAndPage: (file: File, pageIndex: number, pageId: string) => void;
   /** 사이드바 너비 설정 (200~400 clamp) */
   setSidebarWidth: (width: number) => void;
 }
@@ -404,6 +409,27 @@ export const usePdfFileStore = create<PdfFileStore>((set, get) => ({
       activePageId: matchingPage?.id ?? s.activePageId,
     };
   }),
+
+  setActiveFileAndPage: (file, pageIndex, pageId) =>
+    set((s) => {
+      // viewerStates를 미리 갱신해 PdfViewer가 savedPage로 currentPageIndex를 덮어쓰는 것 방지
+      const viewerId = s.activeViewerFileId;
+      const newViewerStates = viewerId
+        ? {
+            ...s.viewerStates,
+            [viewerId]: {
+              ...(s.viewerStates[viewerId] ?? {}),
+              currentPage: pageIndex + 1, // 1-indexed
+            },
+          }
+        : s.viewerStates;
+      return {
+        activeFile: file,
+        currentPageIndex: pageIndex,
+        activePageId: pageId,
+        viewerStates: newViewerStates,
+      };
+    }),
 
   setSidebarWidth: (width) =>
     set({ sidebarWidth: Math.min(400, Math.max(200, width)) }),
