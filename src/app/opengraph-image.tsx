@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 
+export const dynamic = 'force-static';
 export const alt = 'ModuMark - 무료 마크다운 편집기 + PDF 도구';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
