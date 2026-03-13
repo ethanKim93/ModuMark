@@ -107,7 +107,7 @@ docs/
 
 **도메인**: Markdown, PDF, Platform, Monetization
 
-**현황**: Phase 1 MVP 완료 (25/25 태스크). Vercel 배포 완료. Phase 2A OCR 통합 완료.
+**현황**: Phase 1 MVP 완료 (25/25 태스크). Vercel 배포 완료. Phase 2A OCR 통합 완료. v0.2.5 릴리즈 완료 (코드 블록 언어 선택 UI, Mermaid 크래시 수정, Tauri 파일 연결 버그 수정).
 
 ## 기술 스택
 
@@ -206,14 +206,15 @@ src/
 │   │   ├── MilkdownEditor.tsx       # Milkdown WYSIWYG
 │   │   └── UnsavedChangesDialog.tsx
 │   ├── layout/
-│   │   ├── AppHeader.tsx          # 상단 헤더
+│   │   ├── AppHeader.tsx          # 상단 헤더 (Tauri 환경에서 버전 표시)
 │   │   ├── AppShell.tsx           # 전체 레이아웃 쉘
 │   │   ├── TabBar.tsx             # 탭 바
 │   │   ├── PdfSidebar.tsx         # PDF 사이드바
 │   │   ├── ThemeToggle.tsx        # dark→light→system 순환, mounted 가드
 │   │   └── FloatingAdSlot.tsx     # 플로팅 광고 슬롯
 │   ├── providers/
-│   │   └── ThemeProvider.tsx      # next-themes, attribute="class", defaultTheme="dark"
+│   │   ├── ThemeProvider.tsx      # next-themes, attribute="class", defaultTheme="dark"
+│   │   └── TauriAutoRedirect.tsx  # Tauri trailingSlash 환경에서 /로 자동 리다이렉트
 │   ├── pdf/
 │   │   ├── DropZone.tsx
 │   │   ├── PdfEditor.tsx          # PDF 통합 에디터
@@ -231,7 +232,8 @@ src/
 │   └── ui/                        # shadcn/ui 컴포넌트
 ├── hooks/
 │   ├── useAutoSave.ts             # 30초 디바운스 자동 저장
-│   └── useEnvironment.ts          # Tauri 환경 감지
+│   ├── useEnvironment.ts          # Tauri 환경 감지
+│   └── useAppVersion.ts           # Tauri 환경에서 앱 버전 조회 (@tauri-apps/api/app)
 ├── lib/
 │   ├── environment.ts             # isTauriApp(), getEnvironment()
 │   ├── fileSystem.ts              # openMarkdownFile, saveMarkdownFile
@@ -258,3 +260,8 @@ src/
 - **Zustand 스토어 분리**: `tabStore.ts` (탭 상태), `pdfFileStore.ts` (PDF 파일 + Undo 히스토리)
 - **로컬 우선 처리**: 모든 파일 처리(PDF, OCR)는 클라이언트 사이드. 서버 전송 없음
 - **Tauri 환경 분기**: `useEnvironment.ts` 훅으로 Tauri/웹 환경 구분, 광고 슬롯 및 파일 시스템 API 분기
+- **Tauri trailingSlash**: `next.config.ts`에 `trailingSlash: true` 설정, `TauriAutoRedirect` 컴포넌트로 루트 리다이렉트 처리
+- **앱 버전 표시**: `useAppVersion.ts` 훅 → Tauri 환경에서만 `@tauri-apps/api/app`의 `getVersion()` 동적 import, AppHeader 로고 옆 `v{version}` 표시 (`text-xs text-muted-foreground`)
+- **Milkdown CSS 변수**: `hsl(var(--xxx))` 래핑 금지 → `var(--xxx)` 직접 사용 (hex 값을 hsl()로 잘못 래핑하는 버그 방지)
+- **코드 블록 언어 선택**: 네이티브 select → 검색 가능 커스텀 드롭다운 + `languageDetector.ts`로 코드 내용 기반 16개 언어 자동 감지
+- **Mermaid 안정화**: 초기화 1회만 수행 + 렌더링 큐 직렬화 + 5초 타임아웃으로 크래시 방지
