@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { FileText } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { StorageWarning } from './StorageWarning';
+import { useAppVersion } from '@/hooks/useAppVersion';
 
 const navItems = [
   { label: 'Markdown', href: '/markdown' },
@@ -13,6 +14,7 @@ const navItems = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const { version } = useAppVersion();
 
   return (
     <>
@@ -21,6 +23,9 @@ export function AppHeader() {
       <Link href="/" className="flex items-center gap-1.5 text-foreground font-bold text-base shrink-0">
         <FileText className="h-4 w-4 text-primary" />
         <span>ModuMark</span>
+        {version && (
+          <span className="text-xs text-muted-foreground font-normal">v{version}</span>
+        )}
       </Link>
 
       <div className="w-px h-4 bg-border" />

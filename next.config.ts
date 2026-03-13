@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   // 웹 배포(Vercel)에서는 기본 모드 유지
   ...(isTauriApp && { output: 'export' }),
 
+  // Tauri custom protocol: /path → out/path/index.html 형태로 생성 필요
+  // trailingSlash 없으면 out/path.html 생성 → Tauri가 못 찾아 404 발생
+  ...(isTauriApp && { trailingSlash: true }),
+
   // 이미지 최적화: Tauri 정적 빌드에서는 비활성화
   ...(isTauriApp && {
     images: {

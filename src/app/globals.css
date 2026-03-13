@@ -268,16 +268,138 @@
   background: color-mix(in srgb, var(--surface) 50%, transparent) !important;
 }
 
+/* 코드 블록 래퍼 (언어 선택 드롭다운 포함) */
+.code-block-wrapper {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.code-block-wrapper pre {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.code-block-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+}
+
+/* 커스텀 언어 드롭다운 */
+.code-lang-dropdown {
+  position: relative;
+}
+
+.code-lang-trigger {
+  font-size: 0.7rem;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+  background: var(--surface);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  outline: none;
+  font-family: 'Liberation Mono', 'Courier New', monospace;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.code-lang-trigger:hover,
+.code-lang-trigger:focus {
+  border-color: var(--ring);
+  color: var(--foreground);
+}
+
+.code-lang-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 50;
+  width: 180px;
+  max-height: 240px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: none;
+  flex-direction: column;
+}
+
+.code-lang-popover.open {
+  display: flex;
+}
+
+.code-lang-search {
+  padding: 0.375rem 0.5rem;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 0.75rem;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.code-lang-search::placeholder {
+  color: var(--muted-foreground);
+}
+
+.code-lang-list {
+  overflow-y: auto;
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.code-lang-item {
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  font-family: 'Liberation Mono', 'Courier New', monospace;
+}
+
+.code-lang-item:hover,
+.code-lang-item.active {
+  background: var(--primary);
+  color: white;
+}
+
+.code-lang-item.selected {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.code-lang-item.selected:hover,
+.code-lang-item.selected.active {
+  color: white;
+}
+
 /* Mermaid 다이어그램 컨테이너 스타일 */
 .mermaid-container {
   max-width: 100%;
-  overflow-x: auto;
   margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.mermaid-container .mermaid-svg-wrapper {
+  padding: 0.75rem;
 }
 
 .mermaid-svg-wrapper {
   display: flex;
   justify-content: flex-start;
+  overflow-x: auto;
 }
 
 .mermaid-svg-wrapper svg {
@@ -286,18 +408,18 @@
 }
 
 .mermaid-error {
-  color: hsl(var(--destructive));
+  color: var(--destructive);
   font-size: 0.875rem;
   padding: 0.5rem 0.75rem;
-  border: 1px solid hsl(var(--destructive));
+  border: 1px solid var(--destructive);
   border-radius: 0.25rem;
-  background: color-mix(in srgb, hsl(var(--destructive)) 8%, transparent);
+  background: color-mix(in srgb, var(--destructive) 8%, transparent);
   white-space: pre-wrap;
   font-family: 'Liberation Mono', 'Courier New', monospace;
 }
 
 .mermaid-loading {
-  color: hsl(var(--muted-foreground));
+  color: var(--muted-foreground);
   font-size: 0.875rem;
   padding: 0.5rem 0;
   font-style: italic;

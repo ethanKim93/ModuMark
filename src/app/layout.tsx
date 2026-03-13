@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { TauriFileOpenProvider } from "@/components/providers/TauriFileOpenProvider";
+import { TauriAutoRedirect } from "@/components/providers/TauriAutoRedirect";
 import { CookieConsentBanner } from "@/components/common/CookieConsentBanner";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import "./globals.css";
@@ -70,6 +71,8 @@ export default function RootLayout({
         <ThemeProvider>
           {/* Tauri 파일 연결 전역 라우팅 (.md→/markdown, .pdf→/pdf) */}
           <TauriFileOpenProvider />
+          {/* Tauri 앱 직접 실행 시 루트(/)에서 /markdown으로 자동 이동 */}
+          <TauriAutoRedirect />
           {children}
           <CookieConsentBanner />
           {/* AdSense: 쿠키 동의 여부 확인 후 조건부 로드 */}
