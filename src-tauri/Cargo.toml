@@ -1,6 +1,6 @@
 [package]
 name = "modumark"
-version = "0.2.7"
+version = "0.2.8"
 description = "ModuMark - 마크다운 에디터 + PDF 통합 도구"
 authors = ["ModuMark"]
 license = "MIT"
