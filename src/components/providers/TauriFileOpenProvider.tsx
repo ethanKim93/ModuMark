@@ -7,9 +7,10 @@ import { useTabStore } from '@/stores/tabStore';
 import { usePdfFileStore } from '@/stores/pdfFileStore';
 
 // TauriAutoRedirect가 파일 연결 처리 완료 전에 리다이렉트하지 않도록 하는 전역 플래그
+// string 값: 목표 라우트('/markdown' | '/pdf') — TauriAutoRedirect가 설정 여부만 확인하여 간섭 방지
 declare global {
   interface Window {
-    __TAURI_FILE_OPEN_DONE__?: boolean;
+    __TAURI_FILE_OPEN_TARGET__?: string;
   }
 }
 
@@ -124,8 +125,8 @@ export function TauriFileOpenProvider() {
           if (defaultTab) {
             updatedStore.closeTab(defaultTab.id);
           }
-          // 파일 연결 처리 완료 신호 — TauriAutoRedirect가 이 플래그 확인
-          window.__TAURI_FILE_OPEN_DONE__ = true;
+          // 목표 라우트 플래그 설정 — TauriAutoRedirect가 /markdown으로 덮어쓰지 않도록 차단
+          window.__TAURI_FILE_OPEN_TARGET__ = '/markdown';
           navigateTo(router, '/markdown');
         }
 
@@ -138,14 +139,15 @@ export function TauriFileOpenProvider() {
             const file = new File([new Uint8Array(f.bytes)], f.name, { type: 'application/pdf' });
             usePdfFileStore.getState().setActiveFile(file);
           }
-          // 파일 연결 처리 완료 신호 — TauriAutoRedirect가 이 플래그 확인
-          window.__TAURI_FILE_OPEN_DONE__ = true;
+          // 목표 라우트 플래그 설정 — TauriAutoRedirect가 /markdown으로 덮어쓰지 않도록 차단
+          window.__TAURI_FILE_OPEN_TARGET__ = '/pdf';
           navigateTo(router, '/pdf');
         }
 
-        // 파일이 없는 경우에도 완료 신호 설정 (TauriAutoRedirect가 즉시 리다이렉트 가능)
+        // 파일이 없는 경우: TauriFileOpenProvider가 직접 /markdown으로 이동
         if (initialFiles.md_files.length === 0 && initialFiles.pdf_files.length === 0) {
-          window.__TAURI_FILE_OPEN_DONE__ = true;
+          window.__TAURI_FILE_OPEN_TARGET__ = '/markdown';
+          navigateTo(router, '/markdown');
         }
 
         // Push 방식: 앱 실행 중 파일 열기 이벤트 수신 (single-instance 케이스)
@@ -178,6 +180,9 @@ export function TauriFileOpenProvider() {
         console.log('[TauriFileOpen] 이벤트 리스너 등록 완료');
       } catch (e) {
         console.error('[TauriFileOpen] 설정 중 오류 발생:', e);
+        // 에러 시에도 /markdown으로 이동하여 빈 화면 방지
+        window.__TAURI_FILE_OPEN_TARGET__ = '/markdown';
+        navigateTo(router, '/markdown');
       }
     };
 
