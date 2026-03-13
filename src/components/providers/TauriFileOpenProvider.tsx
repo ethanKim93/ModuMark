@@ -6,6 +6,13 @@ import { isTauriApp } from '@/lib/environment';
 import { useTabStore } from '@/stores/tabStore';
 import { usePdfFileStore } from '@/stores/pdfFileStore';
 
+// TauriAutoRedirect가 파일 연결 처리 완료 전에 리다이렉트하지 않도록 하는 전역 플래그
+declare global {
+  interface Window {
+    __TAURI_FILE_OPEN_DONE__?: boolean;
+  }
+}
+
 // Rust에서 직렬화되어 오는 파일 데이터 타입
 interface MdFileData {
   name: string;
@@ -109,18 +116,36 @@ export function TauriFileOpenProvider() {
               store.openTab({ title: file.name, content: file.content, isDirty: false });
             }
           }
+          // 파일 연결로 탭을 추가한 후 기본 빈 탭("Untitled") 제거
+          const updatedStore = useTabStore.getState();
+          const defaultTab = updatedStore.tabs.find(
+            (t) => t.title === 'Untitled' && t.content === ''
+          );
+          if (defaultTab) {
+            updatedStore.closeTab(defaultTab.id);
+          }
+          // 파일 연결 처리 완료 신호 — TauriAutoRedirect가 이 플래그 확인
+          window.__TAURI_FILE_OPEN_DONE__ = true;
           navigateTo(router, '/markdown');
         }
 
         // 초기 PDF 파일 처리
         if (initialFiles.pdf_files.length > 0) {
           console.log('[TauriFileOpen] PDF 파일 처리 시작:', initialFiles.pdf_files.map((f) => f.name));
-          const files = initialFiles.pdf_files.map(
-            (f) => new File([new Uint8Array(f.bytes)], f.name, { type: 'application/pdf' })
-          );
           useTabStore.getState().setOpenedFromFileAssociation(true);
-          usePdfFileStore.getState().addFiles(files);
+          // setActiveFile()로 viewerFiles 탭 추가 + activeFile + activeViewerFileId 일괄 설정
+          for (const f of initialFiles.pdf_files) {
+            const file = new File([new Uint8Array(f.bytes)], f.name, { type: 'application/pdf' });
+            usePdfFileStore.getState().setActiveFile(file);
+          }
+          // 파일 연결 처리 완료 신호 — TauriAutoRedirect가 이 플래그 확인
+          window.__TAURI_FILE_OPEN_DONE__ = true;
           navigateTo(router, '/pdf');
+        }
+
+        // 파일이 없는 경우에도 완료 신호 설정 (TauriAutoRedirect가 즉시 리다이렉트 가능)
+        if (initialFiles.md_files.length === 0 && initialFiles.pdf_files.length === 0) {
+          window.__TAURI_FILE_OPEN_DONE__ = true;
         }
 
         // Push 방식: 앱 실행 중 파일 열기 이벤트 수신 (single-instance 케이스)
@@ -140,11 +165,12 @@ export function TauriFileOpenProvider() {
 
         unlistenPdf = await listen<PdfFileData[]>('app:open-pdf-files', (event) => {
           console.log('[TauriFileOpen] app:open-pdf-files 이벤트 수신:', event.payload.map((f) => f.name));
-          const files = event.payload.map(
-            (f) => new File([new Uint8Array(f.bytes)], f.name, { type: 'application/pdf' })
-          );
-          if (files.length > 0) {
-            usePdfFileStore.getState().addFiles(files);
+          if (event.payload.length > 0) {
+            // setActiveFile()로 viewerFiles 탭 추가 + activeFile + activeViewerFileId 일괄 설정
+            for (const f of event.payload) {
+              const file = new File([new Uint8Array(f.bytes)], f.name, { type: 'application/pdf' });
+              usePdfFileStore.getState().setActiveFile(file);
+            }
             navigateTo(router, '/pdf');
           }
         });
