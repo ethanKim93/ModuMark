@@ -43,8 +43,6 @@ const SUPPORTED_LANGUAGES = [
   'cpp',
 ] as const;
 
-type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
-
 /**
  * 커스텀 검색 가능 드롭다운 생성
  * - vanilla JS (ProseMirror NodeView 내부이므로 React 사용 불가)
@@ -55,6 +53,7 @@ function createLanguageDropdown(
 ): {
   dropdown: HTMLDivElement;
   updateSelected: (lang: string, isAuto?: boolean) => void;
+  cleanup: () => void;
 } {
   const normalizedLang = currentLang || 'plain';
 
@@ -74,6 +73,7 @@ function createLanguageDropdown(
   trigger.className = 'code-lang-trigger';
   trigger.type = 'button';
   trigger.textContent = normalizedLang;
+  trigger.dataset.currentLang = normalizedLang;
 
   const popover = document.createElement('div');
   popover.className = 'code-lang-popover';
@@ -101,7 +101,7 @@ function createLanguageDropdown(
     const lowerFilter = filter.toLowerCase();
     const filtered = allLanguages.filter((l) => l.toLowerCase().includes(lowerFilter));
 
-    filtered.forEach((lang, idx) => {
+    filtered.forEach((lang) => {
       const li = document.createElement('li');
       li.className = 'code-lang-item';
       li.textContent = lang;
@@ -109,12 +109,12 @@ function createLanguageDropdown(
         li.classList.add('selected');
       }
       li.addEventListener('mousedown', (e) => {
-        /* mousedown에서 처리해야 input blur보다 먼저 실행됨 */
+        /* mousedown에서 처리 → input blur보다 먼저 실행 + ProseMirror 이벤트 차단 */
         e.preventDefault();
+        e.stopPropagation();
         selectLanguage(lang);
       });
       list.appendChild(li);
-      void idx; // suppress unused warning
     });
 
     return filtered;
@@ -132,7 +132,8 @@ function createLanguageDropdown(
     popover.classList.add('open');
     searchInput.value = '';
     renderList('');
-    searchInput.focus();
+    /* ProseMirror 포커스 간섭 방지 — requestAnimationFrame으로 지연 */
+    requestAnimationFrame(() => searchInput.focus());
   }
 
   function closePopover() {
@@ -150,9 +151,13 @@ function createLanguageDropdown(
     items[focusedIndex].scrollIntoView({ block: 'nearest' });
   }
 
-  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  searchInput.addEventListener('input', (e) => {
+    e.stopPropagation();
+    renderList(searchInput.value);
+  });
 
   searchInput.addEventListener('keydown', (e) => {
+    e.stopPropagation(); /* ProseMirror 키 이벤트 차단 */
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       moveFocus(1);
@@ -170,7 +175,14 @@ function createLanguageDropdown(
     }
   });
 
-  trigger.addEventListener('click', () => {
+  trigger.addEventListener('mousedown', (e) => {
+    /* ProseMirror가 mousedown으로 selection을 변경하지 못하도록 차단 */
+    e.preventDefault();
+    e.stopPropagation();
+  });
+
+  trigger.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (popover.classList.contains('open')) {
       closePopover();
     } else {
@@ -178,15 +190,13 @@ function createLanguageDropdown(
     }
   });
 
-  /* 외부 클릭 시 닫기 */
-  document.addEventListener('mousedown', (e) => {
+  /* 외부 클릭 시 닫기 — NodeView destroy() 시 반드시 제거 */
+  const handleDocumentMousedown = (e: MouseEvent) => {
     if (!dropdown.contains(e.target as globalThis.Node)) {
       closePopover();
     }
-  });
-
-  /* 초기 currentLang 저장 */
-  trigger.dataset.currentLang = normalizedLang;
+  };
+  document.addEventListener('mousedown', handleDocumentMousedown);
 
   /* 외부에서 선택 언어 업데이트 (update() 콜백용) */
   function updateSelected(lang: string, isAuto = false) {
@@ -195,7 +205,12 @@ function createLanguageDropdown(
     trigger.dataset.currentLang = display;
   }
 
-  return { dropdown, updateSelected };
+  /* document 리스너 정리 */
+  function cleanup() {
+    document.removeEventListener('mousedown', handleDocumentMousedown);
+  }
+
+  return { dropdown, updateSelected, cleanup };
 }
 
 /** code-block-header + 커스텀 드롭다운 빌드 */
@@ -205,14 +220,15 @@ function createHeader(
 ): {
   header: HTMLDivElement;
   updateSelected: (lang: string, isAuto?: boolean) => void;
+  cleanup: () => void;
 } {
   const header = document.createElement('div');
   header.className = 'code-block-header';
 
-  const { dropdown, updateSelected } = createLanguageDropdown(currentLang, onChange);
+  const { dropdown, updateSelected, cleanup } = createLanguageDropdown(currentLang, onChange);
   header.appendChild(dropdown);
 
-  return { header, updateSelected };
+  return { header, updateSelected, cleanup };
 }
 
 export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
@@ -238,7 +254,7 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
       const wrapper = document.createElement('div');
       wrapper.className = 'code-block-wrapper';
 
-      const { header, updateSelected } = createHeader(language, dispatchLanguageChange);
+      const { header, updateSelected, cleanup } = createHeader(language, dispatchLanguageChange);
       wrapper.appendChild(header);
 
       const pre = document.createElement('pre');
@@ -253,6 +269,13 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
       return {
         dom: wrapper,
         contentDOM: code,
+        /**
+         * ProseMirror가 헤더(드롭다운) 영역의 이벤트를 처리하지 않도록 차단.
+         * 미구현 시 클릭 → 상태 업데이트 → NodeView 재렌더 → 팝오버 닫힘.
+         */
+        stopEvent(event: Event) {
+          return header.contains(event.target as globalThis.Node);
+        },
         update(newNode: Node) {
           if (newNode.type !== node.type) return false;
           currentNode = newNode;
@@ -275,7 +298,6 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
               const detected = detectLanguage(content);
               if (detected) {
                 updateSelected(detected, true);
-                /* 자동 감지 결과를 실제 attr에 반영 */
                 dispatchLanguageChange(detected === 'plain' ? '' : detected);
               }
             }, 300);
@@ -285,6 +307,7 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
         },
         destroy() {
           if (autoDetectTimer) clearTimeout(autoDetectTimer);
+          cleanup();
         },
       };
     }
@@ -294,7 +317,7 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
     container.className = 'mermaid-container';
     container.setAttribute('data-mermaid', 'true');
 
-    const { header, updateSelected } = createHeader('mermaid', dispatchLanguageChange);
+    const { header, updateSelected, cleanup } = createHeader('mermaid', dispatchLanguageChange);
     container.appendChild(header);
 
     const svgWrapper = document.createElement('div');
@@ -315,8 +338,7 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
           '<div class="mermaid-loading">Mermaid 코드를 입력하세요...</div>';
         return;
       }
-      svgWrapper.innerHTML =
-        '<div class="mermaid-loading">다이어그램 렌더링 중...</div>';
+      svgWrapper.innerHTML = '<div class="mermaid-loading">다이어그램 렌더링 중...</div>';
       try {
         const svg = await renderMermaid(code, currentTheme);
         svgWrapper.innerHTML = svg;
@@ -331,6 +353,9 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
     return {
       dom: container,
       contentDOM: hiddenContent,
+      stopEvent(event: Event) {
+        return header.contains(event.target as globalThis.Node);
+      },
       update(newNode: Node) {
         if (newNode.type !== node.type) return false;
         currentNode = newNode;
@@ -342,6 +367,9 @@ export const milkdownMermaidPlugin = $view(codeBlockSchema.node, () => {
         updateSelected('mermaid');
         renderSvg(newNode.textContent);
         return true;
+      },
+      destroy() {
+        cleanup();
       },
     };
   };
